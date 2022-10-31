@@ -6,7 +6,11 @@ pub type Hash = Vec<u8>;
 
 fn main() {
     let data2 = bincode::serialize("dd").unwrap();
+
+    println!("data2:{:?}", &data2);
+
     let mut hasher = Sha3::sha3_256();
+    println!("data2:{:?}", hasher.input(&data2));
     hasher.input(&data2);
 
     println!("{}", hasher.result_str());
