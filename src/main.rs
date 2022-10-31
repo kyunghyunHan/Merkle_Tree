@@ -1,20 +1,22 @@
 use sha2::Digest;
 
+//data값
 pub type Data = Vec<u8>;
+//hash
 pub type Hash = Vec<u8>;
 
 pub struct MerkleTree {
     pub nodes: Vec<Hash>,
     pub levels: usize,
 }
-
+//해시 디렉션
 /// 증명 해시를 연결할 때 해시를 넣을 쪽에
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum HashDirection {
     Left,
     Right,
 }
-
+//Proof증명
 #[derive(Debug, Default)]
 pub struct Proof<'a> {
     /// 증명을 확인할 때 사용할 해시
@@ -29,7 +31,7 @@ pub enum Error {
 }
 
 type Result<T> = std::result::Result<T, Error>;
-
+//머클트리
 impl MerkleTree {
     fn construct_level_up(level: &[Hash]) {
 
@@ -68,7 +70,7 @@ impl MerkleTree {
     /// 인덱스가 리프에 해당하지 않으면 오류를 반환합니다.
     pub fn get_merkle_proof_by_index(&self, leaf_index: usize) {
 
-        // 우리는 이미 한 쪽의 해시를 알고 있거나 이미 계산할 수 있다.
+        // 이미 한 쪽의 해시를 알고 있거나 이미 계산할 수 있다.
         // 쌍이므로 증명을 위해 다른 하나를 반환해야 한다.
 
         // 이제 부모의 해시를 계산할 수 있으므로 부모의
@@ -87,31 +89,59 @@ fn hash_data(data: &Data) -> Hash {
     sha2::Sha256::digest(data).to_vec()
 }
 
-fn hash_concat(h1: &Hash, h2: &Hash) {}
+//연결
+// fn hash_concat(h1: &Hash, h2: &Hash) -> Hash {
+//     let h3 = h1.iter().chain(h2).copied().collect();
+//     hash_data(&h3)
+// }
 
 fn is_power_of_two(n: usize) -> bool {
     n != 0 && (n & (n - 1)) == 0
 }
-fn main() {}
+fn main() {
+    let data = vec![
+        Data::from("AAAA"),
+        Data::from("BBBB"),
+        Data::from("CCCC"),
+        Data::from("DDDD"),
+        Data::from("EEEE"),
+        Data::from("FFFF"),
+        Data::from("GGGG"),
+        Data::from("HHHH"),
+        Data::from("abcd"),
+    ];
+    println!("{:?}", hash_data(&data[0]))
+}
 
 //Test
-#[cfg(test)]
-mod tests {
-    use super::*;
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
 
-    #[test]
-    fn testttt() {
-        assert_eq!((is_power_of_two(2)), true)
-    }
-    #[test]
-    fn testttt2() {
-        let data = vec![
-            Data::from("AAA"),
-            Data::from("BBB"),
-            Data::from("CCC"),
-            Data::from("DDD"),
-            Data::from("AAA"),
-        ];
-        assert_eq!((hash_data(&data[0])), hash_data(&data[4]))
-    }
-}
+//     #[test]
+//     fn testttt() {
+//         assert_eq!((is_power_of_two(2)), true)
+//     }
+//     #[test]
+//     fn testttt2() {
+//         let data = vec![
+//             Data::from("AAA"),
+//             Data::from("BBB"),
+//             Data::from("CCC"),
+//             Data::from("DDD"),
+//             Data::from("AAA"),
+//         ];
+//         assert_eq!((hash_data(&data[0])), hash_data(&data[4]))
+//     }
+//     #[test]
+//     fn testttt3() {
+//         let data = vec![
+//             Data::from("AAA"),
+//             Data::from("BBB"),
+//             Data::from("CCC"),
+//             Data::from("DDD"),
+//             Data::from("AAA"),
+//         ];
+//         assert_eq!((hash_data(&data[0])), hash_data(&data[4]))
+//     }
+// }
