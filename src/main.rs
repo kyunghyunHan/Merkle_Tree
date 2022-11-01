@@ -4,6 +4,7 @@ use sha2::Digest;
 pub type Data = Vec<u8>;
 //hash
 pub type Hash = Vec<u8>;
+//머클트리
 #[derive(Debug)]
 pub struct MerkleTree {
     pub nodes: Vec<Hash>,
@@ -36,7 +37,7 @@ impl MerkleTree {
     //
     fn construct_level_up(level: &[Hash]) -> Vec<Hash> {
         assert!(is_power_of_two(level.len()));
-        // 하위 해시를 연결하여 상위 레벨을 찾고 이전 레벨로 이동합니다.
+        // 하위 해시를 연결하여 상위 레벨을 찾고 이전 레벨로 이동
         //슬라이스의 시작 부분에서 시작하여 한 번에 슬라이스의 chunk_size 요소에 대한 반복자를 반환
         level
             .chunks(2)
@@ -149,7 +150,7 @@ pub fn verify_merkle_proof(proof: &Proof, data: &Data, root_hash: &Hash) -> bool
 
     current_hash == *root_hash
 }
-
+//데이터 해시화
 fn hash_data(data: &Data) -> Hash {
     sha2::Sha256::digest(data).to_vec()
 }
@@ -164,41 +165,26 @@ fn is_power_of_two(n: usize) -> bool {
     n != 0 && (n & (n - 1)) == 0
 }
 fn main() {
-    println!("{:?}", "머클트리");
+    let data = vec![Data::from("A"), Data::from("B")];
+    //머클트리 생성
+    let new_merkletree = MerkleTree::construct(&data);
+    println!("test:{:?}", new_merkletree);
 }
 
-//Test
-// #[cfg(test)]
 mod tests {
     use super::*;
 
-    #[test]
-    fn testttt() {
-        assert_eq!((is_power_of_two(2)), true)
-    }
-    #[test]
-    fn testttt2() {
-        let data = vec![
-            Data::from("AAA"),
-            Data::from("BBB"),
-            Data::from("CCC"),
-            Data::from("DDD"),
-            Data::from("AAA"),
-        ];
-        assert_eq!((hash_data(&data[0])), hash_data(&data[4]))
-    }
-    #[test]
-    fn testttt3() {
-        let data = vec![
-            Data::from("AAA"),
-            Data::from("BBB"),
-            Data::from("CCC"),
-            Data::from("DDD"),
-            Data::from("AAA"),
-        ];
-        assert_eq!((hash_data(&data[0])), hash_data(&data[4]))
-    }
+    // 트리의 각 데이터 리프에 대한 Merkle 증명을 확인하는 도우미 함수
 
+    fn verify_merkle_proofs(data: &Vec<Vec<u8>>, tree: &MerkleTree) {
+        for data_leaf in data {
+            let proof = tree
+                .get_merkle_proof_by_data(&data_leaf)
+                .expect("Should be able to create proof");
+
+            assert!(verify_merkle_proof(&proof, &data_leaf, &tree.root_hash()));
+        }
+    }
     #[test]
     fn two_level_tree() {
         let data = vec![Data::from("A"), Data::from("B")];
@@ -211,8 +197,16 @@ mod tests {
         let tree = MerkleTree::construct(&data);
 
         assert_eq!(tree.levels, 2);
-        // assert_eq!(tree.num_leaves(), 2);
+        assert_eq!(tree.num_leaves(), 2);
         assert_eq!(tree.nodes.len(), 3);
-        // assert_eq!(tree.leaves().len(), 2);
+        assert_eq!(tree.leaves().len(), 2);
+    }
+    #[test]
+    fn test_merkle_proof_fails_for_invalid_index() {
+        let data = vec![Data::from("AAAA"), Data::from("BBBB")];
+
+        let tree = MerkleTree::construct(&data);
+
+        assert!(tree.get_merkle_proof_by_index(3).is_err());
     }
 }
