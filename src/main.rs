@@ -167,15 +167,16 @@ impl MerkleTree {
 // }
 
 //연결
-// fn hash_concat(h1: &Hash, h2: &Hash) -> Hash {
-//     let h3 = h1.iter().chain(h2).copied().collect();
-//     hash_data(&h3)
-// }
+fn hash_concat(h1: &Hash, h2: &Hash) -> Hash {
+    let h3 = h1.iter().chain(h2).copied().collect();
+    // hash_data(&h3)
+    h3
+}
 
 fn is_power_of_two(n: usize) -> bool {
     n != 0 && (n & (n - 1)) == 0
 }
-
+//
 pub fn serialize<T>(data: &T) -> Result<Vec<u8>, BlockchainError>
 where
     T: Serialize + ?Sized,
@@ -207,12 +208,6 @@ pub fn set_txs_hash(txs: &[Transaction]) -> String {
             "error".to_string()
         }
     }
-    // if let Ok(txs_ser) = serialize(txs) {
-    //     let hashs = hash_to_str(&txs_ser);
-    //     return hashs;
-    // } else {
-    //     return "error".to_string();
-    // }
 }
 //
 pub fn hash_to_str(data: &[u8]) -> String {
@@ -230,9 +225,21 @@ fn main() {
         vin: "2".to_string(),
         vout: "3".to_string(),
     }];
+    let test_data2 = [Transaction {
+        id: "1".to_string(),
+        vin: "2".to_string(),
+        vout: "3".to_string(),
+    }];
     let tett = set_txs_hash(&test_data);
 
     println!("{}", tett);
+
+    let txs_ser = serialize(&test_data);
+
+    let txs_ser2 = serialize(&test_data2);
+
+    let ddd = bincode::serialize(&test_data2).unwrap();
+    println!("ddd:{:?}", ddd);
 }
 //TDD
 #[cfg(test)]
