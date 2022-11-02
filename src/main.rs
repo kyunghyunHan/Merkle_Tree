@@ -7,6 +7,7 @@ pub type Data = Vec<u8>;
 pub type Hash = Vec<u8>;
 
 //트랜잭션
+
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Transaction {
     id: String,
@@ -25,6 +26,7 @@ pub struct Transaction {
 pub struct MerkleTree {
     pub nodes: Vec<Hash>,
     pub levels: usize,
+    //pub MerkleRoot
 }
 //해시 디렉션
 /// 증명 해시를 연결할 때 해시를 넣을 쪽에
@@ -40,16 +42,19 @@ pub struct Proof<'a> {
     /// 튜플의 첫 번째 요소는 연결할 때 해시가 있어야 하는 쪽이다.
     hashes: Vec<(HashDirection, &'a Hash)>,
 }
-//ERROR
-// #[derive(Debug)]
-// pub enum Error {
-//     CantFindDataInMerkleTree,
-//     IndexIsNotALeaf,
-// }
 
 // type Result<T> = std::result::Result<T, Error>;
 //머클트리
 impl MerkleTree {
+    //트랜잭션들을 받아서
+    pub fn test_merkle(datas: Vec<Vec<u8>>) -> i32 {
+        println!("{:?}", &datas);
+        for i in datas.iter() {
+            println!("트랜잭션해시{:?}", i);
+        }
+        1
+    }
+
     //트랙잭션 hash
     pub fn transaction_hash(data: &Transaction) -> String {
         let txs_ser = serialize(data);
@@ -65,6 +70,11 @@ impl MerkleTree {
             }
         }
     }
+    //머클트리 체인 연결
+    fn hash_concat(h1: &Hash, h2: &Hash) -> Hash {
+        let h3 = h1.iter().chain(h2).copied().collect();
+        hash_data(&h3)
+    }
     //한단계 위로
     fn construct_level_up(level: &[Hash]) -> Vec<Hash> {
         assert!(is_power_of_two(level.len()));
@@ -72,7 +82,7 @@ impl MerkleTree {
         //슬라이스의 시작 부분에서 시작하여 한 번에 슬라이스의 chunk_size 요소에 대한 반복자를 반환
         level
             .chunks(2)
-            .map(|pair| hash_concat(&pair[0], &pair[1]))
+            .map(|pair| Self::hash_concat(&pair[0], &pair[1]))
             .collect()
     }
 
@@ -175,8 +185,8 @@ pub fn verify_merkle_proof(proof: &Proof, data: &Data, root_hash: &Hash) -> bool
 
     for (hash_direction, hash) in proof.hashes.iter() {
         current_hash = match hash_direction {
-            HashDirection::Left => hash_concat(hash, &current_hash),
-            HashDirection::Right => hash_concat(&current_hash, hash),
+            HashDirection::Left => MerkleTree::hash_concat(hash, &current_hash),
+            HashDirection::Right => MerkleTree::hash_concat(&current_hash, hash),
         };
     }
 
@@ -189,11 +199,6 @@ fn hash_data(data: &Data) -> Hash {
     serialize_transaction3
 }
 
-//머클트리 체인 연결
-fn hash_concat(h1: &Hash, h2: &Hash) -> Hash {
-    let h3 = h1.iter().chain(h2).copied().collect();
-    hash_data(&h3)
-}
 //
 fn is_power_of_two(n: usize) -> bool {
     n != 0 && (n & (n - 1)) == 0
@@ -258,19 +263,24 @@ fn main() {
     println!("해시 집합:{:?}", txs);
 
     //연결
-    let concat = hash_concat(&txs[0], &txs[1]);
+    let concat = MerkleTree::hash_concat(&txs[0], &txs[1]);
     println!("연결{:?}", concat);
     // // let tss = MerkleTree::construct_level_up(&txs);
 
     //연결한 해시들 해시
     let hash = hash_to_str(&concat);
     println!("연결한 해시들 해시:{:?}", hash);
+    //해시를 다시 직렬
+    let ser_hash1 = bincode::serialize(&hash).unwrap();
+    println!("해시를 다시 직렬 {:?}", ser_hash1);
+    let ser_hash2 = bincode::serialize(&hash).unwrap();
+    println!("해시를 다시 직렬 {:?}", ser_hash2);
 
-    let ser_hash = bincode::serialize(&hash).unwrap();
-    println!("{:?}", ser_hash);
     //역직렬화
-    let deserialize_hash: String = bincode::deserialize(&ser_hash).unwrap();
+    let deserialize_hash: String = bincode::deserialize(&ser_hash1).unwrap();
     println!("{:?}", deserialize_hash);
+
+    // let ttttt = MerkleTree::test_merkle(txs);
 }
 
 //TDD
