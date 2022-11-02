@@ -1,5 +1,5 @@
 use crate::error::BlockchainError;
-use anyhow::Result;
+use anyhow::{Error, Result};
 use serde::{Deserialize, Serialize};
 mod error;
 use crypto::{digest::Digest, sha3::Sha3};
@@ -41,54 +41,54 @@ pub struct Proof<'a> {
     hashes: Vec<(HashDirection, &'a Hash)>,
 }
 //ERROR
-#[derive(Debug)]
-pub enum Error {
-    CantFindDataInMerkleTree,
-    IndexIsNotALeaf,
-}
+// #[derive(Debug)]
+// pub enum Error {
+//     CantFindDataInMerkleTree,
+//     IndexIsNotALeaf,
+// }
 
 // type Result<T> = std::result::Result<T, Error>;
 //머클트리
 impl MerkleTree {
     //한단계 위로
-    // fn construct_level_up(level: &[Hash]) -> Vec<Hash> {
-    //     assert!(is_power_of_two(level.len()));
-    //     // 하위 해시를 연결하여 상위 레벨을 찾고 이전 레벨로 이동
-    //     //슬라이스의 시작 부분에서 시작하여 한 번에 슬라이스의 chunk_size 요소에 대한 반복자를 반환
-    //     level
-    //         .chunks(2)
-    //         .map(|pair| hash_concat(&pair[0], &pair[1]))
-    //         .collect()
-    // }
+    fn construct_level_up(level: &[Hash]) -> Vec<Hash> {
+        assert!(is_power_of_two(level.len()));
+        // 하위 해시를 연결하여 상위 레벨을 찾고 이전 레벨로 이동
+        //슬라이스의 시작 부분에서 시작하여 한 번에 슬라이스의 chunk_size 요소에 대한 반복자를 반환
+        level
+            .chunks(2)
+            .map(|pair| hash_concat(&pair[0], &pair[1]))
+            .collect()
+    }
 
     /// 주어진 입력 데이터로부터 머클 트리 생성
-    // pub fn construct(input: &[Data]) -> MerkleTree {
-    //     // 일반적으로 주장하는 대신 여기에 결과를 반환하지만
-    //     // 제공된 함수 서명으로 유지
-    //     assert!(is_power_of_two(input.len()));
-    //     // 입력 데이터의 해시를 가져온다. 이것은 Merkle 트리의 잎이 된다.
-    //     let mut hashes: Vec<Vec<Hash>> = vec![input.iter().map(hash_data).collect()];
-    //     let mut last_level = &hashes[0];
+    pub fn construct(input: &[Data]) -> MerkleTree {
+        // 일반적으로 주장하는 대신 여기에 결과를 반환하지만
+        // 제공된 함수 서명으로 유지
+        assert!(is_power_of_two(input.len()));
+        // 입력 데이터의 해시를 가져온다. 이것은 Merkle 트리의 잎이 된다.
+        let mut hashes: Vec<Vec<Hash>> = vec![input.iter().map(hash_data).collect()];
+        let mut last_level = &hashes[0];
 
-    //     let num_levels = (input.len() as f64).log2() as usize;
-    //     // 한 번에 한 레벨씩 트리를 반복하고 다음 레벨에서 노드를 계산한다.
+        let num_levels = (input.len() as f64).log2() as usize;
+        // 한 번에 한 레벨씩 트리를 반복하고 다음 레벨에서 노드를 계산한다.
 
-    //     for _ in 0..num_levels {
-    //         let mut next_level = vec![MerkleTree::construct_level_up(last_level)];
-    //         hashes.append(&mut next_level);
-    //         last_level = &hashes[hashes.len() - 1];
-    //     }
+        for _ in 0..num_levels {
+            let mut next_level = vec![MerkleTree::construct_level_up(last_level)];
+            hashes.append(&mut next_level);
+            last_level = &hashes[hashes.len() - 1];
+        }
 
-    //     MerkleTree {
-    //         nodes: hashes.into_iter().flatten().collect(),
-    //         levels: num_levels + 1,
-    //     }
-    // }
+        MerkleTree {
+            nodes: hashes.into_iter().flatten().collect(),
+            levels: num_levels + 1,
+        }
+    }
 
     /// 주어진 입력 데이터가 주어진 루트 해시를 생성하는지 확인
-    // pub fn verify(input: &[Data], root_hash: &Hash) -> bool {
-    //     MerkleTree::construct(input).root_hash() == *root_hash
-    // }
+    pub fn verify(input: &[Data], root_hash: &Hash) -> bool {
+        MerkleTree::construct(input).root_hash() == *root_hash
+    }
     /// 머클 트리의 루트 해시를 반환
     pub fn root_hash(&self) -> Hash {
         self.nodes[self.nodes.len() - 1].clone()
@@ -116,9 +116,9 @@ impl MerkleTree {
     /// 주어진 리프 인덱스에 대한 머클 증명을 생성합니다.
     /// 인덱스가 리프에 해당하지 않으면 오류를 반환합니다.
     pub fn get_merkle_proof_by_index(&self, leaf_index: usize) -> Result<Proof> {
-        // if leaf_index >= self.num_leaves() {
-        //     return Err(Error::IndexIsNotALeaf);
-        // }
+        if leaf_index >= self.num_leaves() {
+            return Err(Error::msg("message"));
+        }
 
         let mut proof = Proof::default();
         let mut current_known_index = leaf_index;
@@ -141,41 +141,43 @@ impl MerkleTree {
     //데이터 찾기
     /// 주어진 데이터의 첫 번째 발생에 대한 Merkle 증명을 생성
     /// 머클 트리에서 데이터를 찾을 수 없으면 오류를 반환.
-    pub fn get_merkle_proof_by_data(&self, data: &Data) -> i32 {
-        // let data_hash = hash_data(data);
-        // let leaf_index = self
-        //     .leaves()
-        //     .iter()
-        //     .position(|leaf| *leaf == data_hash)
-        // .ok_or(Error::CantFindDataInMerkleTree)?;
-        1
-        // self.get_merkle_proof_by_index(leaf_index)
+    pub fn get_merkle_proof_by_data(&self, data: &Data) -> Result<Proof> {
+        let data_hash = hash_data(data);
+        let leaf_index = self
+            .leaves()
+            .iter()
+            .position(|leaf| *leaf == data_hash)
+            .ok_or(Error::msg("message"))?;
+
+        self.get_merkle_proof_by_index(leaf_index)
     }
 }
 
 /// 주어진 증명이 주어진 루트 해시와 데이터에 유효한지 확인
-// pub fn verify_merkle_proof(proof: &Proof, data: &Data, root_hash: &Hash) -> bool {
-//     let mut current_hash = hash_data(data);
+pub fn verify_merkle_proof(proof: &Proof, data: &Data, root_hash: &Hash) -> bool {
+    let mut current_hash = hash_data(data);
 
-//     for (hash_direction, hash) in proof.hashes.iter() {
-//         current_hash = match hash_direction {
-//             HashDirection::Left => hash_concat(hash, &current_hash),
-//             HashDirection::Right => hash_concat(&current_hash, hash),
-//         };
-//     }
+    for (hash_direction, hash) in proof.hashes.iter() {
+        current_hash = match hash_direction {
+            HashDirection::Left => hash_concat(hash, &current_hash),
+            HashDirection::Right => hash_concat(&current_hash, hash),
+        };
+    }
 
-//     current_hash == *root_hash
-// }
+    current_hash == *root_hash
+}
 //데이터 해시화
-// fn hash_data(data: &Data) -> Hash {
-//     sha2::Sha256::digest(data).to_vec()
-// }
+fn hash_data(data: &Data) -> Hash {
+    let serialize_transaction3 = bincode::serialize(&data).unwrap();
+    println!("해시직렬화1:{:?}", serialize_transaction3);
+    serialize_transaction3
+}
 
 //머클트리 체인 연결
 fn hash_concat(h1: &Hash, h2: &Hash) -> Hash {
     let h3 = h1.iter().chain(h2).copied().collect();
     // hash_data(&h3)
-    h3
+    hash_data(&h3)
 }
 //
 fn is_power_of_two(n: usize) -> bool {
@@ -214,6 +216,7 @@ pub fn set_txs_hash2(txs: &[Transaction]) -> String {
         }
         Err(e) => {
             println!("err");
+            assert!(false);
             "error".to_string()
         }
     }
@@ -229,20 +232,28 @@ pub fn hash_to_str(data: &[u8]) -> String {
 
 //test
 fn main() {
+    assert!(true);
     //트랜잭션데이터
-    let test_data = [Transaction {
-        id: "1".to_string(),
-        vin: "2".to_string(),
-        vout: "3".to_string(),
-    }];
+    let txs = [
+        Transaction {
+            id: "1".to_string(),
+            vin: "2".to_string(),
+            vout: "3".to_string(),
+        },
+        Transaction {
+            id: "3".to_string(),
+            vin: "4".to_string(),
+            vout: "5".to_string(),
+        },
+    ];
     let test_data2 = [Transaction {
-        id: "1".to_string(),
-        vin: "2".to_string(),
-        vout: "3".to_string(),
+        id: "3".to_string(),
+        vin: "4".to_string(),
+        vout: "5".to_string(),
     }];
 
     //트랜잭션 해시
-    let transaction_hash = set_txs_hash(&test_data);
+    let transaction_hash = set_txs_hash(&txs);
     println!("트랜잭션 해시{}", transaction_hash);
     let transaction_hash2 = set_txs_hash(&test_data2);
     println!("트랜잭션 해시{}", transaction_hash2);
@@ -252,16 +263,17 @@ fn main() {
     let serialize_transaction2 = bincode::serialize(&transaction_hash2).unwrap();
     println!("트랜잭션 직렬화2:{:?}", serialize_transaction2);
     //연결
-    let concat = hash_concat(&serialize_transaction, &serialize_transaction);
+
+    let concat = hash_concat(&serialize_transaction, &serialize_transaction2);
     println!("연결{:?}", concat);
 
     let hash = hash_to_str(&concat);
 
     println!("해시{}", hash);
+
+    let serialize_transaction3 = bincode::serialize(&hash).unwrap();
+    println!("해시직렬화1:{:?}", serialize_transaction3);
 }
-//1.해시
-//2.직렬화
-//3.직렬화 연결
 
 //TDD
 #[cfg(test)]
