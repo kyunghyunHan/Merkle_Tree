@@ -195,11 +195,24 @@ pub struct Block {
     hash: String,
 }
 //트랜잭션 hash
-pub fn set_txs_hash(txs: &[Transaction]) {
-    if let Ok(txs_ser) = serialize(txs) {
-        let hashs = hash_to_str(&txs_ser);
-        println!("트랜잭션 test:{}", hashs);
+pub fn set_txs_hash(txs: &[Transaction]) -> String {
+    let txs_ser = serialize(txs);
+    match txs_ser {
+        Ok(txs_ser) => {
+            let hashs = hash_to_str(&txs_ser);
+            hashs
+        }
+        Err(e) => {
+            println!("err");
+            "error".to_string()
+        }
     }
+    // if let Ok(txs_ser) = serialize(txs) {
+    //     let hashs = hash_to_str(&txs_ser);
+    //     return hashs;
+    // } else {
+    //     return "error".to_string();
+    // }
 }
 //
 pub fn hash_to_str(data: &[u8]) -> String {
@@ -217,5 +230,32 @@ fn main() {
         vin: "2".to_string(),
         vout: "3".to_string(),
     }];
-    set_txs_hash(&test_data);
+    let tett = set_txs_hash(&test_data);
+
+    println!("{}", tett);
+}
+//TDD
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test1() {
+        let test_data = 1;
+
+        assert_eq!(test_data, 1);
+    }
+    //트랜잭션 해시 되는지
+    #[test]
+    fn test_transcion() {
+        let test_data = [Transaction {
+            id: "1".to_string(),
+            vin: "2".to_string(),
+            vout: "3".to_string(),
+        }];
+
+        assert_eq!(
+            set_txs_hash(&test_data),
+            "0be44d4de480f8ff39719fa36f229bf09268ceaea192c3a5e7767a58639817b1"
+        );
+    }
 }
