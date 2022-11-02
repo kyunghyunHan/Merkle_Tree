@@ -182,7 +182,7 @@ pub fn verify_merkle_proof(proof: &Proof, data: &Data, root_hash: &Hash) -> bool
 
     current_hash == *root_hash
 }
-//데이터 해시화
+//데이터 직렬화
 fn hash_data(data: &Data) -> Hash {
     let serialize_transaction3 = bincode::serialize(&data).unwrap();
     // println!("해시직렬화1:{:?}", serialize_transaction3);
@@ -273,23 +273,22 @@ mod tests {
     use super::*;
     #[test]
     fn test1() {
-        let test_data = 1;
-
-        assert_eq!(test_data, 1);
-    }
-    //트랜잭션 해시 되는지
-    #[test]
-    fn test_transcion() {
-        let test_data = [Transaction {
+        let tx1 = Transaction {
             id: "1".to_string(),
             vin: "2".to_string(),
             vout: "3".to_string(),
-        }];
+        };
+        let tx2 = Transaction {
+            id: "4".to_string(),
+            vin: "5".to_string(),
+            vout: "6".to_string(),
+        };
+        //트랜잭션 해시 및 직렬화
+        let hash_tx1 = MerkleTree::transaction_hash(&tx1);
+        let hash_tx2 = MerkleTree::transaction_hash(&tx2);
+        println!("트랜잭션 해시 및 직렬화:{:?}", hash_tx1);
 
-        // assert_eq!(
-        //     set_txs_hash(&test_data),
-        //     "0be44d4de480f8ff39719fa36f229bf09268ceaea192c3a5e7767a58639817b1"
-        // );
+        assert!(hash_tx1 != hash_tx2);
     }
 }
 
