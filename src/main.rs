@@ -50,6 +50,21 @@ pub struct Proof<'a> {
 // type Result<T> = std::result::Result<T, Error>;
 //머클트리
 impl MerkleTree {
+    //트랙잭션 hash
+    pub fn transaction_hash(data: &Transaction) -> String {
+        let txs_ser = serialize(data);
+        match txs_ser {
+            Ok(txs_ser) => {
+                let hashs = hash_to_str(&txs_ser);
+                hashs
+            }
+            Err(e) => {
+                println!("err");
+                assert!(false);
+                "error".to_string()
+            }
+        }
+    }
     //한단계 위로
     fn construct_level_up(level: &[Hash]) -> Vec<Hash> {
         assert!(is_power_of_two(level.len()));
@@ -78,6 +93,7 @@ impl MerkleTree {
             hashes.append(&mut next_level);
             last_level = &hashes[hashes.len() - 1];
         }
+        println!("last_level{:?}", last_level);
 
         MerkleTree {
             nodes: hashes.into_iter().flatten().collect(),
@@ -169,14 +185,13 @@ pub fn verify_merkle_proof(proof: &Proof, data: &Data, root_hash: &Hash) -> bool
 //데이터 해시화
 fn hash_data(data: &Data) -> Hash {
     let serialize_transaction3 = bincode::serialize(&data).unwrap();
-    println!("해시직렬화1:{:?}", serialize_transaction3);
+    // println!("해시직렬화1:{:?}", serialize_transaction3);
     serialize_transaction3
 }
 
 //머클트리 체인 연결
 fn hash_concat(h1: &Hash, h2: &Hash) -> Hash {
     let h3 = h1.iter().chain(h2).copied().collect();
-    // hash_data(&h3)
     hash_data(&h3)
 }
 //
@@ -194,7 +209,7 @@ where
 }
 
 //트랜잭션 hash
-pub fn set_txs_hash(txs: &[Transaction]) -> String {
+pub fn set_txs_hash(txs: &[String]) -> String {
     let txs_ser = serialize(txs);
     match txs_ser {
         Ok(txs_ser) => {
@@ -207,20 +222,7 @@ pub fn set_txs_hash(txs: &[Transaction]) -> String {
         }
     }
 }
-pub fn set_txs_hash2(txs: &[Transaction]) -> String {
-    let txs_ser = serialize(txs);
-    match txs_ser {
-        Ok(txs_ser) => {
-            let hashs = hash_to_str(&txs_ser);
-            hashs
-        }
-        Err(e) => {
-            println!("err");
-            assert!(false);
-            "error".to_string()
-        }
-    }
-}
+
 //해시로 변경
 pub fn hash_to_str(data: &[u8]) -> String {
     let mut hasher = Sha3::sha3_256();
@@ -234,45 +236,35 @@ pub fn hash_to_str(data: &[u8]) -> String {
 fn main() {
     assert!(true);
     //트랜잭션데이터
-    let txs = [
-        Transaction {
-            id: "1".to_string(),
-            vin: "2".to_string(),
-            vout: "3".to_string(),
-        },
-        Transaction {
-            id: "3".to_string(),
-            vin: "4".to_string(),
-            vout: "5".to_string(),
-        },
-    ];
-    let test_data2 = [Transaction {
-        id: "3".to_string(),
-        vin: "4".to_string(),
-        vout: "5".to_string(),
-    }];
+    let tx1 = Transaction {
+        id: "1".to_string(),
+        vin: "2".to_string(),
+        vout: "3".to_string(),
+    };
+    let tx2 = Transaction {
+        id: "4".to_string(),
+        vin: "5".to_string(),
+        vout: "6".to_string(),
+    };
+    //트랜잭션 해시 및 직렬화
+    let hash_tx1 = MerkleTree::transaction_hash(&tx1);
+    let hash_tx2 = MerkleTree::transaction_hash(&tx2);
+    println!("트랜잭션 해시 및 직렬화:{:?}", hash_tx1);
 
-    //트랜잭션 해시
-    let transaction_hash = set_txs_hash(&txs);
-    println!("트랜잭션 해시{}", transaction_hash);
-    let transaction_hash2 = set_txs_hash(&test_data2);
-    println!("트랜잭션 해시{}", transaction_hash2);
-    //트랜잭션 직렬화
-    let serialize_transaction = bincode::serialize(&transaction_hash).unwrap();
-    println!("트랜잭션 직렬화1:{:?}", serialize_transaction);
-    let serialize_transaction2 = bincode::serialize(&transaction_hash2).unwrap();
-    println!("트랜잭션 직렬화2:{:?}", serialize_transaction2);
+    //해시 집합 및 직렬화
+    let mut txs = Vec::new();
+    txs.push(bincode::serialize(&hash_tx1).unwrap());
+    txs.push(bincode::serialize(&hash_tx2).unwrap());
+    println!("해시 집합:{:?}", txs);
+
     //연결
-
-    let concat = hash_concat(&serialize_transaction, &serialize_transaction2);
+    let concat = hash_concat(&txs[0], &txs[1]);
     println!("연결{:?}", concat);
+    // // let tss = MerkleTree::construct_level_up(&txs);
 
+    //연결한 해시들 해시
     let hash = hash_to_str(&concat);
-
-    println!("해시{}", hash);
-
-    let serialize_transaction3 = bincode::serialize(&hash).unwrap();
-    println!("해시직렬화1:{:?}", serialize_transaction3);
+    println!("연결한 해시들 해시:{:?}", hash);
 }
 
 //TDD
@@ -294,10 +286,10 @@ mod tests {
             vout: "3".to_string(),
         }];
 
-        assert_eq!(
-            set_txs_hash(&test_data),
-            "0be44d4de480f8ff39719fa36f229bf09268ceaea192c3a5e7767a58639817b1"
-        );
+        // assert_eq!(
+        //     set_txs_hash(&test_data),
+        //     "0be44d4de480f8ff39719fa36f229bf09268ceaea192c3a5e7767a58639817b1"
+        // );
     }
 }
 
@@ -308,7 +300,12 @@ mod tests {
 4.트랜잭션 합치고 해시
 5.트랜잭션 직렬화
 
-
+순서
+트랜잭션생성
+트랜잭선 해시화
+트랜잭션 합치고
+합침과 동시에 level 올라가고
+함치고 해시
 
 
 */
