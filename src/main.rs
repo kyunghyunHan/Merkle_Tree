@@ -1,12 +1,9 @@
 use crate::error::BlockchainError;
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-// use sha2::Digest;
 mod error;
 use crypto::{digest::Digest, sha3::Sha3};
-//data값
 pub type Data = Vec<u8>;
-//hash
 pub type Hash = Vec<u8>;
 //머클트리 = 이진트리
 //머클루트의 용량은 32bytes
@@ -16,6 +13,16 @@ pub type Hash = Vec<u8>;
 //머클트리는 특정 거래를 찾을떄 효율적
 
 //거래가 1024라면 특정 거래를 찾기 위해 log2(1024 )=10
+
+//트랜잭션
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct Transaction {
+    id: String,
+    vin: String,
+    vout: String,
+}
+
+//머클트리
 #[derive(Debug)]
 pub struct MerkleTree {
     pub nodes: Vec<Hash>,
@@ -166,17 +173,17 @@ impl MerkleTree {
 //     sha2::Sha256::digest(data).to_vec()
 // }
 
-//연결
+//머클트리 체인 연결
 fn hash_concat(h1: &Hash, h2: &Hash) -> Hash {
     let h3 = h1.iter().chain(h2).copied().collect();
     // hash_data(&h3)
     h3
 }
-
+//
 fn is_power_of_two(n: usize) -> bool {
     n != 0 && (n & (n - 1)) == 0
 }
-//
+//직렬화
 pub fn serialize<T>(data: &T) -> Result<Vec<u8>, BlockchainError>
 where
     T: Serialize + ?Sized,
@@ -185,16 +192,7 @@ where
     //serialize:기본 구성을 사용하여 직렬화 가능한 개체를 Vec바이트 단위로 직렬화
     Ok(bincode::serialize(data)?)
 }
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
-pub struct Transaction {
-    id: String,
-    vin: String,
-    vout: String,
-}
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
-pub struct Block {
-    hash: String,
-}
+
 //트랜잭션 hash
 pub fn set_txs_hash(txs: &[Transaction]) -> String {
     let txs_ser = serialize(txs);
@@ -209,7 +207,20 @@ pub fn set_txs_hash(txs: &[Transaction]) -> String {
         }
     }
 }
-//
+pub fn set_txs_hash2(txs: &[Transaction]) -> String {
+    let txs_ser = serialize(txs);
+    match txs_ser {
+        Ok(txs_ser) => {
+            let hashs = hash_to_str(&txs_ser);
+            hashs
+        }
+        Err(e) => {
+            println!("err");
+            "error".to_string()
+        }
+    }
+}
+//해시로 변경
 pub fn hash_to_str(data: &[u8]) -> String {
     let mut hasher = Sha3::sha3_256();
     // 입력 메시지
@@ -220,6 +231,7 @@ pub fn hash_to_str(data: &[u8]) -> String {
 
 //test
 fn main() {
+    //트랜잭션데이터
     let test_data = [Transaction {
         id: "1".to_string(),
         vin: "2".to_string(),
@@ -230,19 +242,27 @@ fn main() {
         vin: "2".to_string(),
         vout: "3".to_string(),
     }];
-    let tett = set_txs_hash(&test_data);
 
-    println!("{}", tett);
+    //트랜잭션 해시
+    let transaction_hash = set_txs_hash(&test_data);
+    println!("트랜잭션 해시{}", transaction_hash);
 
-    let txs_ser = serialize(&test_data);
+    //트랜잭션 직렬화
+    let serialize_transaction = bincode::serialize(&transaction_hash).unwrap();
+    println!("트랜잭션 직렬화:{:?}", serialize_transaction);
 
-    let txs_ser2 = serialize(&test_data2);
+    //연결
+    let concat = hash_concat(&serialize_transaction, &serialize_transaction);
+    println!("연결{:?}", concat);
 
-    let ddd = bincode::serialize(&test_data2).unwrap();
-    println!("ddd:{:?}", ddd);
-    let con = hash_concat(&ddd, &ddd);
-    println!("{:?}", con);
+    let hash = hash_to_str(&concat);
+
+    println!("해시{}", hash);
 }
+//1.해시
+//2.직렬화
+//3.직렬화 연결
+
 //TDD
 #[cfg(test)]
 mod tests {
@@ -268,3 +288,15 @@ mod tests {
         );
     }
 }
+
+/*
+1.트랜잭션 직렬화
+2.트랜잭션 해시
+3.트랜잭션 직렬화
+4.트랜잭션 합치고 해시
+5.트랜잭션 직렬화
+
+
+
+
+*/
