@@ -240,6 +240,8 @@ fn main() {
 
     let ddd = bincode::serialize(&test_data2).unwrap();
     println!("ddd:{:?}", ddd);
+    let con = hash_concat(&ddd, &ddd);
+    println!("{:?}", con);
 }
 //TDD
 #[cfg(test)]
