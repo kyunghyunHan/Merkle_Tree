@@ -1,10 +1,21 @@
+use crate::error::BlockchainError;
+use anyhow::Result;
+use serde::{Deserialize, Serialize};
 use sha2::Digest;
+mod error;
 
 //data값
 pub type Data = Vec<u8>;
 //hash
 pub type Hash = Vec<u8>;
-//머클트리
+//머클트리 = 이진트리
+//머클루트의 용량은 32bytes
+//두개씩 묶은 다음 SHA-256암호화 방법을 통해 해시값을 나타내고 그렇게 묶은 값들을 두개씩 묶기를 반복
+//머클루트 생성
+//거래가 N증가할떄마다 특정 거래를 찾는 경우의 수는 log2(N)으로 늘어난다.
+//머클트리는 특정 거래를 찾을떄 효율적
+
+//거래가 1024라면 특정 거래를 찾기 위해 log2(1024 )=10
 #[derive(Debug)]
 pub struct MerkleTree {
     pub nodes: Vec<Hash>,
@@ -24,17 +35,17 @@ pub struct Proof<'a> {
     /// 튜플의 첫 번째 요소는 연결할 때 해시가 있어야 하는 쪽이다.
     hashes: Vec<(HashDirection, &'a Hash)>,
 }
-
+//ERROR
 #[derive(Debug)]
 pub enum Error {
     CantFindDataInMerkleTree,
     IndexIsNotALeaf,
 }
 
-type Result<T> = std::result::Result<T, Error>;
+// type Result<T> = std::result::Result<T, Error>;
 //머클트리
 impl MerkleTree {
-    //
+    //한단계 위로
     fn construct_level_up(level: &[Hash]) -> Vec<Hash> {
         assert!(is_power_of_two(level.len()));
         // 하위 해시를 연결하여 상위 레벨을 찾고 이전 레벨로 이동
@@ -100,9 +111,9 @@ impl MerkleTree {
     /// 주어진 리프 인덱스에 대한 머클 증명을 생성합니다.
     /// 인덱스가 리프에 해당하지 않으면 오류를 반환합니다.
     pub fn get_merkle_proof_by_index(&self, leaf_index: usize) -> Result<Proof> {
-        if leaf_index >= self.num_leaves() {
-            return Err(Error::IndexIsNotALeaf);
-        }
+        // if leaf_index >= self.num_leaves() {
+        //     return Err(Error::IndexIsNotALeaf);
+        // }
 
         let mut proof = Proof::default();
         let mut current_known_index = leaf_index;
@@ -122,18 +133,18 @@ impl MerkleTree {
 
         Ok(proof)
     }
-
+    //데이터 찾기
     /// 주어진 데이터의 첫 번째 발생에 대한 Merkle 증명을 생성
     /// 머클 트리에서 데이터를 찾을 수 없으면 오류를 반환.
-    pub fn get_merkle_proof_by_data(&self, data: &Data) -> Result<Proof> {
-        let data_hash = hash_data(data);
-        let leaf_index = self
-            .leaves()
-            .iter()
-            .position(|leaf| *leaf == data_hash)
-            .ok_or(Error::CantFindDataInMerkleTree)?;
-
-        self.get_merkle_proof_by_index(leaf_index)
+    pub fn get_merkle_proof_by_data(&self, data: &Data) -> i32 {
+        // let data_hash = hash_data(data);
+        // let leaf_index = self
+        //     .leaves()
+        //     .iter()
+        //     .position(|leaf| *leaf == data_hash)
+        // .ok_or(Error::CantFindDataInMerkleTree)?;
+        1
+        // self.get_merkle_proof_by_index(leaf_index)
     }
 }
 
@@ -164,27 +175,22 @@ fn hash_concat(h1: &Hash, h2: &Hash) -> Hash {
 fn is_power_of_two(n: usize) -> bool {
     n != 0 && (n & (n - 1)) == 0
 }
-fn main() {
-    let data = vec![Data::from("A"), Data::from("B")];
-    //머클트리 생성
-    let new_merkletree = MerkleTree::construct(&data);
-    println!("test:{:?}", new_merkletree);
-}
 
+#[cfg(test)]
 mod tests {
     use super::*;
 
-    // 트리의 각 데이터 리프에 대한 Merkle 증명을 확인하는 도우미 함수
+    // Helper function to verify Merkle proofs for each data leaf in the tree
+    // fn verify_merkle_proofs(data: &Vec<Vec<u8>>, tree: &MerkleTree) {
+    //     for data_leaf in data {
+    //         let proof = tree
+    //             .get_merkle_proof_by_data(&data_leaf)
+    //             // .expect("Should be able to create proof");
 
-    fn verify_merkle_proofs(data: &Vec<Vec<u8>>, tree: &MerkleTree) {
-        for data_leaf in data {
-            let proof = tree
-                .get_merkle_proof_by_data(&data_leaf)
-                .expect("Should be able to create proof");
+    //         assert!(verify_merkle_proof(&proof, &data_leaf, &tree.root_hash()));
+    //     }
+    // }
 
-            assert!(verify_merkle_proof(&proof, &data_leaf, &tree.root_hash()));
-        }
-    }
     #[test]
     fn two_level_tree() {
         let data = vec![Data::from("A"), Data::from("B")];
@@ -201,6 +207,125 @@ mod tests {
         assert_eq!(tree.nodes.len(), 3);
         assert_eq!(tree.leaves().len(), 2);
     }
+
+    #[test]
+    fn three_level_tree() {
+        let data = vec![
+            Data::from("AAA"),
+            Data::from("BBB"),
+            Data::from("CCC"),
+            Data::from("DDD"),
+        ];
+
+        let expected_hash = hash_concat(
+            &hash_concat(&hash_data(&data[0]), &hash_data(&data[1])),
+            &hash_concat(&hash_data(&data[2]), &hash_data(&data[3])),
+        );
+
+        assert!(MerkleTree::verify(&data, &expected_hash));
+
+        let tree = MerkleTree::construct(&data);
+
+        assert_eq!(tree.levels, 3);
+        assert_eq!(tree.num_leaves(), 4);
+        assert_eq!(tree.nodes.len(), 7);
+        assert_eq!(tree.leaves().len(), 4);
+    }
+
+    #[test]
+    fn four_level_tree() {
+        let data = vec![
+            Data::from("AAAA"),
+            Data::from("BBBB"),
+            Data::from("CCCC"),
+            Data::from("DDDD"),
+            Data::from("EEEE"),
+            Data::from("FFFF"),
+            Data::from("GGGG"),
+            Data::from("HHHH"),
+        ];
+
+        let expected_hash = hash_concat(
+            &hash_concat(
+                &hash_concat(&hash_data(&data[0]), &hash_data(&data[1])),
+                &hash_concat(&hash_data(&data[2]), &hash_data(&data[3])),
+            ),
+            &hash_concat(
+                &hash_concat(&hash_data(&data[4]), &hash_data(&data[5])),
+                &hash_concat(&hash_data(&data[6]), &hash_data(&data[7])),
+            ),
+        );
+
+        assert!(MerkleTree::verify(&data, &expected_hash));
+
+        let tree = MerkleTree::construct(&data);
+
+        assert_eq!(tree.levels, 4);
+        assert_eq!(tree.num_leaves(), 8);
+        assert_eq!(tree.nodes.len(), 15);
+        assert_eq!(tree.leaves().len(), 8);
+    }
+
+    #[test]
+    // fn merkle_proof_fails_for_wrong_data() {
+    //     let data = vec![Data::from("AAAA"), Data::from("BBBB")];
+
+    //     let tree = MerkleTree::construct(&data);
+    //     let proof = tree
+    //         .get_merkle_proof_by_data(&Data::from("BBBB"))
+    //         .expect("Should be able to create proof");
+    //     assert!(!verify_merkle_proof(
+    //         &proof,
+    //         &Data::from("AAAA"),
+    //         &tree.root_hash()
+    //     ));
+    // }
+
+    // #[test]
+    // fn merkle_proof_fails_for_wrong_tree() {
+    //     let data = vec![Data::from("AAAA"), Data::from("BBBB")];
+
+    //     let tree = MerkleTree::construct(&data);
+
+    //     let other_data = vec![
+    //         Data::from("AAAA"),
+    //         Data::from("BBBB"),
+    //         Data::from("CCCC"),
+    //         Data::from("DDDD"),
+    //     ];
+
+    //     let other_tree = MerkleTree::construct(&other_data);
+
+    //     let proof = tree
+    //         .get_merkle_proof_by_data(&Data::from("AAAA"))
+    //         .expect("Should be able to create proof");
+    //     assert!(!verify_merkle_proof(
+    //         &proof,
+    //         &Data::from("AAAA"),
+    //         &other_tree.root_hash()
+    //     ));
+    // }
+
+    // #[test]
+    // fn merkle_proof_fails_if_tree_changed() {
+    //     let data = vec![Data::from("AAAA"), Data::from("BBBB")];
+
+    //     let tree = MerkleTree::construct(&data);
+
+    //     let other_data = vec![Data::from("AAAA"), Data::from("BBBA")];
+
+    //     let other_tree = MerkleTree::construct(&other_data);
+
+    //     let proof = tree
+    //         .get_merkle_proof_by_data(&Data::from("AAAA"))
+    //         .expect("Should be able to create proof");
+
+    //     assert!(!verify_merkle_proof(
+    //         &proof,
+    //         &Data::from("AAAA"),
+    //         &other_tree.root_hash()
+    //     ));
+    // }
     #[test]
     fn test_merkle_proof_fails_for_invalid_index() {
         let data = vec![Data::from("AAAA"), Data::from("BBBB")];
@@ -209,4 +334,38 @@ mod tests {
 
         assert!(tree.get_merkle_proof_by_index(3).is_err());
     }
+}
+pub fn serialize<T>(data: &T) -> Result<Vec<u8>, BlockchainError>
+where
+    T: Serialize + ?Sized,
+{
+    //Bincode는 작은 바이너리 직렬화 전략을 사용하여 인코딩 및 디코딩하기 위한 상자
+    //serialize:기본 구성을 사용하여 직렬화 가능한 개체를 Vec바이트 단위로 직렬화
+    Ok(bincode::serialize(data)?)
+}
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct Transaction {
+    id: String,
+    vin: String,
+    vout: String,
+}
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct Block {
+    hash: String,
+}
+
+pub fn set_txs_hash(txs: &[Transaction]) {
+    if let Ok(txs_ser) = serialize(txs) {
+        println!("{:?}", txs_ser)
+    }
+}
+
+fn main() {
+    let test_data = [Transaction {
+        id: "1".to_string(),
+        vin: "2".to_string(),
+        vout: "3".to_string(),
+    }];
+    let test = set_txs_hash(&test_data);
+    println!("test:{:?}", test)
 }
