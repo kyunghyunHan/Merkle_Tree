@@ -265,8 +265,11 @@ fn main() {
     //연결한 해시들 해시
     let hash = hash_to_str(&concat);
     println!("연결한 해시들 해시:{:?}", hash);
+
+    let ser_hash = bincode::serialize(&hash).unwrap();
+    println!("{:?}", ser_hash);
     //역직렬화
-    let deserialize_hash: String = bincode::deserialize(&txs[0]).unwrap();
+    let deserialize_hash: String = bincode::deserialize(&ser_hash).unwrap();
     println!("{:?}", deserialize_hash);
 }
 
