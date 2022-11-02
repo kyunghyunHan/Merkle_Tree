@@ -5,14 +5,6 @@ mod error;
 use crypto::{digest::Digest, sha3::Sha3};
 pub type Data = Vec<u8>;
 pub type Hash = Vec<u8>;
-//머클트리 = 이진트리
-//머클루트의 용량은 32bytes
-//두개씩 묶은 다음 SHA-256암호화 방법을 통해 해시값을 나타내고 그렇게 묶은 값들을 두개씩 묶기를 반복
-//머클루트 생성
-//거래가 N증가할떄마다 특정 거래를 찾는 경우의 수는 log2(N)으로 늘어난다.
-//머클트리는 특정 거래를 찾을떄 효율적
-
-//거래가 1024라면 특정 거래를 찾기 위해 log2(1024 )=10
 
 //트랜잭션
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -22,7 +14,13 @@ pub struct Transaction {
     vout: String,
 }
 
-//머클트리
+//머클트리 = 이진트리
+//머클루트의 용량은 32bytes
+//두개씩 묶은 다음 SHA-256암호화 방법을 통해 해시값을 나타내고 그렇게 묶은 값들을 두개씩 묶기를 반복
+//머클루트 생성
+//거래가 N증가할떄마다 특정 거래를 찾는 경우의 수는 log2(N)으로 늘어난다.
+//머클트리는 특정 거래를 찾을떄 효율적
+//거래가 1024라면 특정 거래를 찾기 위해 log2(1024 )=10
 #[derive(Debug)]
 pub struct MerkleTree {
     pub nodes: Vec<Hash>,
@@ -246,11 +244,13 @@ fn main() {
     //트랜잭션 해시
     let transaction_hash = set_txs_hash(&test_data);
     println!("트랜잭션 해시{}", transaction_hash);
-
+    let transaction_hash2 = set_txs_hash(&test_data2);
+    println!("트랜잭션 해시{}", transaction_hash2);
     //트랜잭션 직렬화
     let serialize_transaction = bincode::serialize(&transaction_hash).unwrap();
-    println!("트랜잭션 직렬화:{:?}", serialize_transaction);
-
+    println!("트랜잭션 직렬화1:{:?}", serialize_transaction);
+    let serialize_transaction2 = bincode::serialize(&transaction_hash2).unwrap();
+    println!("트랜잭션 직렬화2:{:?}", serialize_transaction2);
     //연결
     let concat = hash_concat(&serialize_transaction, &serialize_transaction);
     println!("연결{:?}", concat);
