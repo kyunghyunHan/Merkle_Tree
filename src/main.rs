@@ -318,6 +318,15 @@ fn main() {
 
     let merkle_root = 1;
     println!("{}{}", "merkle_root:", merkle_root);
+
+    let test = [0];
+
+    let test_hash1 = bincode::serialize(&test).unwrap();
+    let test2 = 0;
+    let test_hash2 = bincode::serialize(&test2).unwrap();
+
+    println!("1{:?}", test_hash1);
+    println!("2{:?}", test_hash2);
 }
 
 //TDD
