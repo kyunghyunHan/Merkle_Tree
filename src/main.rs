@@ -83,7 +83,10 @@ impl MerkleTree {
         }
     }
     //머클트리 체인 연결
+
     fn hash_concat(h1: &Hash, h2: &Hash) -> Hash {
+        //반복자 체인
+        //두개의 반복자를 가져와서 둘모두에 대한  새로운 반복자 생성
         let h3 = h1.iter().chain(h2).copied().collect();
         hash_data(&h3)
     }
@@ -116,7 +119,7 @@ impl MerkleTree {
             last_level = &hashes[hashes.len() - 1];
         }
         println!("last_level{:?}", last_level);
-
+        //flatten:중첩된 구조를 평면화
         MerkleTree {
             nodes: hashes.into_iter().flatten().collect(),
             levels: num_levels + 1,
@@ -210,8 +213,10 @@ fn hash_data(data: &Data) -> Hash {
     serialize_transaction3
 }
 
-//
 fn is_power_of_two(n: usize) -> bool {
+    //4==0 4 &4 -4-1 ==0
+    //비트연산자
+    //0이 아니거나 n & (n-1) 이 0이면true
     n != 0 && (n & (n - 1)) == 0
 }
 //직렬화
@@ -299,6 +304,15 @@ fn main() {
 
     let merkle_root = 1;
     println!("{}{}", "merkle_root:", merkle_root);
+
+    let a = [1, 2, 3];
+
+    let mut iter = a.iter();
+
+    println!("{:?}", iter.next());
+    println!("{:?}", iter.next());
+    println!("{:?}", iter.next());
+    println!("{:?}", a.chunks(2));
 }
 
 //TDD
