@@ -120,6 +120,7 @@ impl MerkleTree {
         }
         println!("last_level{:?}", last_level);
         //flatten:중첩된 구조를 평면화
+        //합친다?
         MerkleTree {
             nodes: hashes.into_iter().flatten().collect(),
             levels: num_levels + 1,
@@ -182,8 +183,13 @@ impl MerkleTree {
     //데이터 찾기
     /// 주어진 데이터의 첫 번째 발생에 대한 Merkle 증명을 생성
     /// 머클 트리에서 데이터를 찾을 수 없으면 오류를 반환.
+    ///
+    ///
+    ///
     pub fn get_merkle_proof_by_data(&self, data: &Data) -> Result<Proof> {
         let data_hash = hash_data(data);
+
+        //position:반복기에서 요소를 검색하여 해당 index 몇번쨰인지 반환
         let leaf_index = self
             .leaves()
             .iter()
@@ -304,15 +310,6 @@ fn main() {
 
     let merkle_root = 1;
     println!("{}{}", "merkle_root:", merkle_root);
-
-    let a = [1, 2, 3];
-
-    let mut iter = a.iter();
-
-    println!("{:?}", iter.next());
-    println!("{:?}", iter.next());
-    println!("{:?}", iter.next());
-    println!("{:?}", a.chunks(2));
 }
 
 //TDD
