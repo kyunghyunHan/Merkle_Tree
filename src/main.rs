@@ -7,7 +7,6 @@ pub type Data = Vec<u8>;
 pub type Hash = Vec<u8>;
 
 //트랜잭션
-
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Transaction {
     id: String,
@@ -26,7 +25,7 @@ pub struct Transaction {
 pub struct MerkleTree {
     pub nodes: Vec<Hash>,
     pub levels: usize,
-    //pub MerkleRoot
+    pub MerkleRoot: String,
 }
 //해시 디렉션
 /// 증명 해시를 연결할 때 해시를 넣을 쪽에
@@ -47,7 +46,7 @@ pub struct Proof<'a> {
 //머클트리
 impl MerkleTree {
     //트랜잭션들을 받아서
-    pub fn test_merkle(datas: Vec<Vec<u8>>) -> Vec<Hash> {
+    pub fn test_merkle(datas: Vec<Vec<u8>>) -> MerkleTree {
         println!("{:?}", &datas);
         assert!(is_power_of_two(datas.len()));
         println!("이거{}", is_power_of_two(datas.len()));
@@ -57,14 +56,23 @@ impl MerkleTree {
         println!("트리 경로:{}", num_levels);
         println!("hashe:{:?}", hashes);
         println!("last_level:{:?}", last_level.len());
-        // 하위 해시를 연결하여 상위 레벨을 찾고 이전 레벨로 이동
-        //슬라이스의 시작 부분에서 시작하여 한 번에 슬라이스의 chunk_size 요소에 대한 반복자를 반환
-        datas
-            .chunks(2)
-            .map(|pair| Self::hash_concat(&pair[0], &pair[1]))
-            .collect()
 
-        //두개찍 짝직고
+        for _ in 0..num_levels {
+            let mut next_level = vec![MerkleTree::construct_level_up(last_level)];
+            hashes.append(&mut next_level);
+            last_level = &hashes[hashes.len() - 1];
+        }
+        println!("last_level{:?}", last_level[0]);
+        //into_iter:소유권을 가져감
+        //flatten:중첩된 구조를 평면화
+        let test = hash_to_str(&last_level[0]);
+        println!("{}", test);
+        println!("{}", test);
+        MerkleTree {
+            nodes: hashes.into_iter().flatten().collect(),
+            levels: num_levels + 1,
+            MerkleRoot: test,
+        }
     }
 
     //트랙잭션 hash
@@ -101,36 +109,36 @@ impl MerkleTree {
             .collect()
     }
 
-    /// 주어진 입력 데이터로부터 머클 트리 생성
-    pub fn construct(input: &[Data]) -> MerkleTree {
-        // 일반적으로 주장하는 대신 여기에 결과를 반환하지만
-        // 제공된 함수 서명으로 유지
-        assert!(is_power_of_two(input.len()));
-        // 입력 데이터의 해시를 가져온다. 이것은 Merkle 트리의 잎이 된다.
-        let mut hashes: Vec<Vec<Hash>> = vec![input.iter().map(hash_data).collect()];
-        let mut last_level = &hashes[0];
+    // /// 주어진 입력 데이터로부터 머클 트리 생성
+    // pub fn construct(input: &[Data]) -> MerkleTree {
+    //     // 일반적으로 주장하는 대신 여기에 결과를 반환하지만
+    //     // 제공된 함수 서명으로 유지
+    //     assert!(is_power_of_two(input.len()));
+    //     // 입력 데이터의 해시를 가져온다. 이것은 Merkle 트리의 잎이 된다.
+    //     let mut hashes: Vec<Vec<Hash>> = vec![input.iter().map(hash_data).collect()];
+    //     let mut last_level = &hashes[0];
 
-        let num_levels = (input.len() as f64).log2() as usize;
-        // 한 번에 한 레벨씩 트리를 반복하고 다음 레벨에서 노드를 계산한다.
+    //     let num_levels = (input.len() as f64).log2() as usize;
+    //     // 한 번에 한 레벨씩 트리를 반복하고 다음 레벨에서 노드를 계산한다.
 
-        for _ in 0..num_levels {
-            let mut next_level = vec![MerkleTree::construct_level_up(last_level)];
-            hashes.append(&mut next_level);
-            last_level = &hashes[hashes.len() - 1];
-        }
-        println!("last_level{:?}", last_level);
-        //flatten:중첩된 구조를 평면화
-        //합친다?
-        MerkleTree {
-            nodes: hashes.into_iter().flatten().collect(),
-            levels: num_levels + 1,
-        }
-    }
+    //     for _ in 0..num_levels {
+    //         let mut next_level = vec![MerkleTree::construct_level_up(last_level)];
+    //         hashes.append(&mut next_level);
+    //         last_level = &hashes[hashes.len() - 1];
+    //     }
+    //     println!("last_level{:?}", last_level);
+    //     //flatten:중첩된 구조를 평면화
+    //     //합친다?
+    //     MerkleTree {
+    //         nodes: hashes.into_iter().flatten().collect(),
+    //         levels: num_levels + 1,
+    //     }
+    // }
 
     /// 주어진 입력 데이터가 주어진 루트 해시를 생성하는지 확인
-    pub fn verify(input: &[Data], root_hash: &Hash) -> bool {
-        MerkleTree::construct(input).root_hash() == *root_hash
-    }
+    // pub fn verify(input: &[Data], root_hash: &Hash) -> bool {
+    //     MerkleTree::construct(input).root_hash() == *root_hash
+    // }
     /// 머클 트리의 루트 해시를 반환
     pub fn root_hash(&self) -> Hash {
         self.nodes[self.nodes.len() - 1].clone()
