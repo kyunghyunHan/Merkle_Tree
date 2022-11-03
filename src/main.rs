@@ -207,7 +207,6 @@ pub fn verify_merkle_proof(proof: &Proof, data: &Data, root_hash: &Hash) -> bool
 //데이터 직렬화
 fn hash_data(data: &Data) -> Hash {
     let serialize_transaction3 = bincode::serialize(&data).unwrap();
-    // println!("해시직렬화1:{:?}", serialize_transaction3);
     serialize_transaction3
 }
 
@@ -295,7 +294,11 @@ fn main() {
     let deserialize_hash: String = bincode::deserialize(&ser_hash1).unwrap();
     println!("{:?}", deserialize_hash);
 
-    let ttttt = MerkleTree::test_merkle(txs);
+    let test_merkle_fn = MerkleTree::test_merkle(txs);
+    println!("{:?}", test_merkle_fn);
+
+    let merkle_root = 1;
+    println!("{}{}", "merkle_root:", merkle_root);
 }
 
 //TDD
