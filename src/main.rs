@@ -321,6 +321,11 @@ mod tests {
 
         assert!(hash_tx1 != hash_tx2);
     }
+
+    #[test]
+    fn test2() {
+        assert!(1 == 1);
+    }
 }
 
 /*
