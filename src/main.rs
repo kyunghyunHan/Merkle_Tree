@@ -47,12 +47,24 @@ pub struct Proof<'a> {
 //머클트리
 impl MerkleTree {
     //트랜잭션들을 받아서
-    pub fn test_merkle(datas: Vec<Vec<u8>>) -> i32 {
+    pub fn test_merkle(datas: Vec<Vec<u8>>) -> Vec<Hash> {
         println!("{:?}", &datas);
-        for i in datas.iter() {
-            println!("트랜잭션해시{:?}", i);
-        }
-        1
+        assert!(is_power_of_two(datas.len()));
+        println!("이거{}", is_power_of_two(datas.len()));
+        let num_levels = (datas.len() as f64).log2() as usize;
+        let mut hashes: Vec<Vec<Hash>> = vec![datas.iter().map(hash_data).collect()];
+        let mut last_level = &hashes[0];
+        println!("트리 경로:{}", num_levels);
+        println!("hashe:{:?}", hashes);
+        println!("last_level:{:?}", last_level.len());
+        // 하위 해시를 연결하여 상위 레벨을 찾고 이전 레벨로 이동
+        //슬라이스의 시작 부분에서 시작하여 한 번에 슬라이스의 chunk_size 요소에 대한 반복자를 반환
+        datas
+            .chunks(2)
+            .map(|pair| Self::hash_concat(&pair[0], &pair[1]))
+            .collect()
+
+        //두개찍 짝직고
     }
 
     //트랙잭션 hash
@@ -260,6 +272,9 @@ fn main() {
     let mut txs = Vec::new();
     txs.push(bincode::serialize(&hash_tx1).unwrap());
     txs.push(bincode::serialize(&hash_tx2).unwrap());
+    txs.push(bincode::serialize(&hash_tx1).unwrap());
+    txs.push(bincode::serialize(&hash_tx2).unwrap());
+
     println!("해시 집합:{:?}", txs);
 
     //연결
@@ -280,7 +295,7 @@ fn main() {
     let deserialize_hash: String = bincode::deserialize(&ser_hash1).unwrap();
     println!("{:?}", deserialize_hash);
 
-    // let ttttt = MerkleTree::test_merkle(txs);
+    let ttttt = MerkleTree::test_merkle(txs);
 }
 
 //TDD
