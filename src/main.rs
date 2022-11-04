@@ -87,6 +87,7 @@ impl MerkleTree {
         assert!(is_power_of_two(datas.len()));
         println!("이거{}", is_power_of_two(datas.len()));
         let num_levels = (datas.len() as f64).log2() as usize;
+        //트랜잭션들을 받아서 직렬화
         let mut hashes: Vec<Vec<Hash>> = vec![datas.iter().map(hash_data).collect()];
         let mut last_level = &hashes[0];
         println!("몇번인지확인:{}", num_levels);
@@ -137,6 +138,10 @@ impl MerkleTree {
         hash_data(&h3)
     }
     //한단계 위로
+    /*
+    해시집합 받아서
+    하위해시를 연결
+    */
     fn construct_level_up(level: &[Hash]) -> Vec<Hash> {
         assert!(is_power_of_two(level.len()));
         // 하위 해시를 연결하여 상위 레벨을 찾고 이전 레벨로 이동
@@ -330,6 +335,8 @@ fn main() {
 
     println!("1{:?}", test_hash1);
     println!("2{:?}", test_hash2);
+
+    // let ara = MerkleTree::construct_level_up(&txs);
 }
 
 //TDD
