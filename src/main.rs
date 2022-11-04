@@ -6,44 +6,76 @@ use crypto::{digest::Digest, sha3::Sha3};
 pub type Data = Vec<u8>;
 pub type Hash = Vec<u8>;
 
-//트랜잭션
+/*
+트랜잭션
+id: 트랜잭션 해시 값
+vin: 트랜잭션 입력 세트
+vout: 트랜잭션 출력 수집
+*/
+
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Transaction {
     id: String,
     vin: String,
     vout: String,
 }
+/*
+머클트리
+머클트리 = 이진트리
+머클루트의 용량은 32bytes
+두개씩 묶은 다음 SHA-256암호화 방법을 통해 해시값을 나타내고 그렇게 묶은 값들을 두개씩 묶기를 반복
+거래가 N증가할떄마다 특정 거래를 찾는 경우의 수는 log2(N)으로 늘어난다.
+머클트리는 특정 거래를 찾을떄 효율적
+거래가 1024라면 특정 거래를 찾기 위해 log2(1024 )=10
+MerkleRoot:최종 결과 해시값
+*/
 
-//머클트리 = 이진트리
-//머클루트의 용량은 32bytes
-//두개씩 묶은 다음 SHA-256암호화 방법을 통해 해시값을 나타내고 그렇게 묶은 값들을 두개씩 묶기를 반복
-//머클루트 생성
-//거래가 N증가할떄마다 특정 거래를 찾는 경우의 수는 log2(N)으로 늘어난다.
-//머클트리는 특정 거래를 찾을떄 효율적
-//거래가 1024라면 특정 거래를 찾기 위해 log2(1024 )=10
 #[derive(Debug)]
 pub struct MerkleTree {
     pub nodes: Vec<Hash>,
     pub levels: usize,
     pub MerkleRoot: String,
 }
-//해시 디렉션
-/// 증명 해시를 연결할 때 해시를 넣을 쪽에
+/*
+
+해시 디렉션
+증명 해시를 연결할 때 해시를 넣을 쪽에
+*/
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum HashDirection {
     Left,
     Right,
 }
-//Proof증명
+
+/*
+Proof증명
+*/
 #[derive(Debug, Default)]
 pub struct Proof<'a> {
     /// 증명을 확인할 때 사용할 해시
-    /// 튜플의 첫 번째 요소는 연결할 때 해시가 있어야 하는 쪽이다.
+    /// 튜플의 첫 번째 요소는 연결할 때 해시가 있어야 하는 쪽
     hashes: Vec<(HashDirection, &'a Hash)>,
 }
 
-// type Result<T> = std::result::Result<T, Error>;
-//머클트리
+/*
+머클트리
+
+1.트랜잭션 직렬화
+2.트랜잭션 해시
+3.트랜잭션 직렬화
+4.트랜잭션 합치고 해시
+5.트랜잭션 직렬화
+
+순서
+트랜잭션생성
+트랜잭선 해시화
+트랜잭션 합치고
+합침과 동시에 level 올라가고
+함치고 해시
+
+
+*/
 impl MerkleTree {
     //트랜잭션들을 받아서
     pub fn test_merkle(datas: Vec<Vec<u8>>) -> MerkleTree {
@@ -135,7 +167,7 @@ impl MerkleTree {
     //     }
     // }
 
-    /// 주어진 입력 데이터가 주어진 루트 해시를 생성하는지 확인
+    //주어진 입력 데이터가 주어진 루트 해시를 생성하는지 확인
     // pub fn verify(input: &[Data], root_hash: &Hash) -> bool {
     //     MerkleTree::construct(input).root_hash() == *root_hash
     // }
@@ -163,13 +195,15 @@ impl MerkleTree {
 
         self.nodes.len() - ((self.nodes.len() - index) / 2)
     }
-    /// 주어진 리프 인덱스에 대한 머클 증명을 생성합니다.
-    /// 인덱스가 리프에 해당하지 않으면 오류를 반환합니다.
+
+    /*
+    주어진 리프 인덱스에 대한 머클 증명을 생성합니다.
+    인덱스가 리프에 해당하지 않으면 오류를 반환합니다.
+    */
     pub fn get_merkle_proof_by_index(&self, leaf_index: usize) -> Result<Proof> {
         if leaf_index >= self.num_leaves() {
             return Err(Error::msg("message"));
         }
-
         let mut proof = Proof::default();
         let mut current_known_index = leaf_index;
         for _ in 0..self.levels - 1 {
@@ -185,15 +219,13 @@ impl MerkleTree {
             // 이 노드는 이제 알려진 노드
             current_known_index = self.parent_index(current_known_index);
         }
-
         Ok(proof)
     }
-    //데이터 찾기
-    /// 주어진 데이터의 첫 번째 발생에 대한 Merkle 증명을 생성
-    /// 머클 트리에서 데이터를 찾을 수 없으면 오류를 반환.
-    ///
-    ///
-    ///
+    /*
+     데이터 찾기
+     주어진 데이터의 첫 번째 발생에 대한 Merkle 증명을 생성
+    머클 트리에서 데이터를 찾을 수 없으면 오류를 반환.
+    */
     pub fn get_merkle_proof_by_data(&self, data: &Data) -> Result<Proof> {
         let data_hash = hash_data(data);
 
@@ -333,6 +365,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    /*트랜잭션 해시되는지 */
     #[test]
     fn test1() {
         let tx1 = Transaction {
@@ -358,20 +391,3 @@ mod tests {
         assert!(1 == 1);
     }
 }
-
-/*
-1.트랜잭션 직렬화
-2.트랜잭션 해시
-3.트랜잭션 직렬화
-4.트랜잭션 합치고 해시
-5.트랜잭션 직렬화
-
-순서
-트랜잭션생성
-트랜잭선 해시화
-트랜잭션 합치고
-합침과 동시에 level 올라가고
-함치고 해시
-
-
-*/
