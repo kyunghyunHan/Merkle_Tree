@@ -375,6 +375,10 @@ mod tests {
     fn test2() {
         assert!(1 == 1);
     }
+    #[test]
+    fn test3() {
+        assert!(1 == 1);
+    }
 }
 
 /*
