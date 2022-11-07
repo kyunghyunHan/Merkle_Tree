@@ -35,6 +35,7 @@ MerkleRoot:최종 결과 해시값
 맨아래행의 해시를 잎
 중간해시를 가지
 맨위에 해시를 루트
+홀수일 경우 복사해서 해시
 */
 #[derive(Debug)]
 pub struct MerkleRoot {
@@ -435,4 +436,205 @@ n= 7일떄
 1=50(mod 7)
 일정한 임이의 256비트
 단방향 알고리즘
+*/
+
+/*
+newwork
+
+client server
+client -> Gateway  -> was -> server -> database
+
+
+
+p2p Network
+- 어느서버에다가도 하던지 동일한 데이터를 받을수 있다
+- 토렌트
+
+
+*/
+/*
+TCP
+서버와 client간에 데이터를 신뢰성 있게 전달하기 위해 만들어진 프로토콜
+
+데이터 전송을 위한 연결을 만드는 연결지향 프로토콜
+
+데이터 전송 과정에서 손실이나 순서가 바뀌는 경우 교정 및 순사 재조합 지원
+
+IPC소켓통신 방법으로 보통 지원
+
+
+*/
+/*
+http
+get
+post
+put
+
+delete
+head  서버 헤드 정보 획득 요청
+options 서버 옵션 확인 요창
+
+*/
+/*
+web socket
+양방향
+한별연결이 수립되면 클라이언트와 서버 자유롭게 데이터 전송가능
+실시간 시세 데이터 ,채팅 솔루션 등에 사용
+*/
+/*
+RPC
+원격 서버의 함수를 함출 호출할수 있는 통신기술
+IDL을 사용해서 호출 규약을 정의하고 이를 통해 stub코드를 생성
+program 에서는 stud을 call함으로써 개발자는 네트워크의 대한 지식 업이 원격 함수 호출이 가능하다.
+*/
+/*
+gRPC
+구글에서 개발한 RPC통신
+양방향 스트링 데이터 처리 MSA구조의 서비스에서 활용
+
+protobuf
+grpc의 IDL protobuffer의 줄임말 프로그램 상에서 이를 사용하기 위해 .proto stub이 생성되어야 한다.json,xml통신보다 데이터 전송 크기가 작고 성능이 빠르다.
+
+proto3를 사용
+*/
+/*
+블록 검증
+
+신규블록 수신
+블록구조 일치여부
+재계산 block header hash== block header hash
+block timestamp <now()+2hours
+block size <1mb
+coinbace transaction check
+transaction check
+mempool update  ->데이터베이스 업데이트
+levelDB insert New Block
+Block 전파
+
+
+
+*/
+/*
+트랙잭션 전피
+
+트랜잭션을 다른 노드에게서 전파받는다
+이미 받은 트랜잭션인지 확인
+)없는 경우 다른 노드에게 전파
+상대노드가 없는 경우 getdata를 요청받는다
+새로운 트랜잭션에 전달
+연결딘 모든 노드에게 전달될떄까지 수행한다
+
+*/
+/*
+
+트랜잭션 검증
+
+신규 투랜잭션 수신
+트랜잭션 구조 일치 여부
+in,out list 존재여부
+
+트랜잭션 사이즈 <1mb
+output value <2100만 btc
+mempool존재 여부
+block 존재여부
+input check(double spending)
+input check(orphan tx)
+input check(coin base) 보상
+input check(Not UTXO)
+input >output value
+check input script
+add mempool
+트랜잭션 전파
+*/
+/*
+블록전파
+- 마이닝에 성공한 블록은 아래 방법 없이 블록 전체 데이터를 모든 노드에게 전달
+- network에 블록체인 다운 받기 위해 언결된 다른 노드들에 ping전송
+- 전달받은 block header전달
+- 아직 전달 받지 못한 block인 경우 header와 getdata를 모두 요처
+새로운 블록전달
+*/
+
+/*
+
+블록 구조
+
+ Block size   4bytes    <1mb
+BlockHeader 80bytes
+Transaction Counter 1~9 bytes
+Transaction variable
+
+*/
+/*
+블록헤더 구조
+version 버전정보
+previous block hash 이전 블록의 헤더 해시
+merkle root 트랜잭션들의 hashroot
+timestamp 블록 생성시간
+Difficulty Target pow의 어려움 정도
+nonce
+*/
+/*
+블록생성
+
+mempool tx선택
+coinbase tx 생성
+merkle root 연산
+block header구성
+find nonce
+block전파
+*/
+/*
+UTXO
+아직 사용되지 않는 Output을 지칭
+UTXO 사용 여부를 통해서 자산의 안정성을 확인
+input 사용자가 내는금액
+output 받는금액
+*/
+/*
+트랜잭션 내부구조
+
+version  현재값1
+Flag  Witnesses Tx여부에 따라 달라짐
+Number of inputs input의 개수
+inputs input정보
+Number of Outputs  ouput의 개수
+outputs output정보
+Witnesses Witnesses서명데이터
+Locktime 트랜잭션 시간 제한
+
+
+*/
+/*
+input구조
+Transcation 해시 output이 포함된 txid
+output index  Tx안에서 seq
+Unlocking-script size Unlocking-script크기
+Unlocking-script  output을 input으로 바꾸는 서명정보
+sequence Number  기본값 oxffffff
+
+*/
+/*
+Amount  송금할금액 사토시 단위
+Locking-script size
+lockking-script   송금자의 정보가 담긴 데이터
+
+*/
+/*
+Transaction Fee
+input 총힙에서 전체 output의 총합을 뺸 값
+블록에서 설명했듯니 채굴자들이 거래를 더 빠르게 하기 위해서 수수료를 높여야 한다
+
+*/
+
+/*
+coinbase
+
+pow에서 채굴에 성공하게 되면 채굴에 성공한 채굴자에게 기본 보상 수수료와 거래 수수료를 보상으로 제공
+
+*/
+/*
+p2pk
+
+
 */
