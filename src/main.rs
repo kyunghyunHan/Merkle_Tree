@@ -5,7 +5,7 @@ mod error;
 use crypto::{digest::Digest, sha3::Sha3};
 pub type Data = Vec<u8>;
 pub type Hash = Vec<u8>;
-
+use hex;
 /*
 트랜잭션
 value
@@ -289,62 +289,70 @@ pub fn hash_to_str(data: &[u8]) -> String {
 
 //test
 fn main() {
-    assert!(true);
-    //트랜잭션데이터
-    let tx1 = Transaction {
-        id: "1".to_string(),
-        vin: "2".to_string(),
-        vout: "3".to_string(),
-    };
-    let tx2 = Transaction {
-        id: "4".to_string(),
-        vin: "5".to_string(),
-        vout: "6".to_string(),
-    };
-    //트랜잭션 해시 및 직렬화
-    let hash_tx1 = MerkleTree::transaction_hash(&tx1);
-    let hash_tx2 = MerkleTree::transaction_hash(&tx2);
-    println!("트랜잭션 해시 및 직렬화:{:?}", hash_tx1);
+    // assert!(true);
+    // //트랜잭션데이터
+    // let tx1 = Transaction {
+    //     id: "1".to_string(),
+    //     vin: "2".to_string(),
+    //     vout: "3".to_string(),
+    // };
+    // let tx2 = Transaction {
+    //     id: "4".to_string(),
+    //     vin: "5".to_string(),
+    //     vout: "6".to_string(),
+    // };
+    // //트랜잭션 해시 및 직렬화
+    // let hash_tx1 = MerkleTree::transaction_hash(&tx1);
+    // let hash_tx2 = MerkleTree::transaction_hash(&tx2);
+    // println!("트랜잭션 해시 및 직렬화:{:?}", hash_tx1);
 
-    //해시 집합 및 직렬화
-    let mut txs = Vec::new();
-    txs.push(bincode::serialize(&hash_tx1).unwrap());
-    txs.push(bincode::serialize(&hash_tx2).unwrap());
-    txs.push(bincode::serialize(&hash_tx1).unwrap());
-    txs.push(bincode::serialize(&hash_tx2).unwrap());
+    // //해시 집합 및 직렬화
+    // let mut txs = Vec::new();
+    // txs.push(bincode::serialize(&hash_tx1).unwrap());
+    // txs.push(bincode::serialize(&hash_tx2).unwrap());
+    // txs.push(bincode::serialize(&hash_tx1).unwrap());
+    // txs.push(bincode::serialize(&hash_tx2).unwrap());
 
-    println!("해시 집합:{:?}", txs);
+    // println!("해시 집합:{:?}", txs);
 
-    //연결
-    let concat = MerkleTree::hash_concat(&txs[0], &txs[1]);
-    println!("연결{:?}", concat);
-    // // let tss = MerkleTree::construct_level_up(&txs);
+    // //연결
+    // let concat = MerkleTree::hash_concat(&txs[0], &txs[1]);
+    // println!("연결{:?}", concat);
+    // // // let tss = MerkleTree::construct_level_up(&txs);
 
-    //연결한 해시들 해시
-    let hash = hash_to_str(&concat);
-    println!("연결한 해시들 해시:{:?}", hash);
-    //해시를 다시 직렬
-    let ser_hash1 = bincode::serialize(&hash).unwrap();
-    println!("해시를 다시 직렬 {:?}", ser_hash1);
-    let ser_hash2 = bincode::serialize(&hash).unwrap();
-    println!("해시를 다시 직렬 {:?}", ser_hash2);
+    // //연결한 해시들 해시
+    // let hash = hash_to_str(&concat);
+    // println!("연결한 해시들 해시:{:?}", hash);
+    // //해시를 다시 직렬
+    // let ser_hash1 = bincode::serialize(&hash).unwrap();
+    // println!("해시를 다시 직렬 {:?}", ser_hash1);
+    // let ser_hash2 = bincode::serialize(&hash).unwrap();
+    // println!("해시를 다시 직렬 {:?}", ser_hash2);
 
-    //역직렬화
-    let deserialize_hash: String = bincode::deserialize(&ser_hash1).unwrap();
-    println!("{:?}", deserialize_hash);
+    // //역직렬화
+    // let deserialize_hash: String = bincode::deserialize(&ser_hash1).unwrap();
+    // println!("{:?}", deserialize_hash);
 
-    let mekle_root = MerkleTree::mekle_tree_return(txs).hash;
-    println!("merkle_root:{:?}", mekle_root);
+    // let mekle_root = MerkleTree::mekle_tree_return(txs).hash;
+    // println!("merkle_root:{:?}", mekle_root);
 
-    let test = [0];
-    let test_hash1 = bincode::serialize(&test).unwrap();
-    let test2 = 0;
-    let test_hash2 = bincode::serialize(&test2).unwrap();
+    // let test = [0];
+    // let test_hash1 = bincode::serialize(&test).unwrap();
+    // let test2 = 0;
+    // let test_hash2 = bincode::serialize(&test2).unwrap();
 
-    println!("1{:?}", test_hash1);
-    println!("2{:?}", test_hash2);
+    // println!("1{:?}", test_hash1);
+    // println!("2{:?}", test_hash2);
 
     // let ara = MerkleTree::construct_level_up(&txs);
+
+    let input = "090A0B0C";
+    let add = serialize(input);
+    let decoded = hex::decode(input).expect("Decoding failed");
+
+    println!("{:?}", decoded);
+    let encoded = hex::encode(decoded);
+    println!("{:?}", encoded);
 }
 
 //TDD
@@ -631,10 +639,155 @@ input 총힙에서 전체 output의 총합을 뺸 값
 coinbase
 
 pow에서 채굴에 성공하게 되면 채굴에 성공한 채굴자에게 기본 보상 수수료와 거래 수수료를 보상으로 제공
-
+//거래방식
 */
 /*
 p2pk
+우웃풋
+이전 아웃풋에 포함된 공개키
+op_checksig
 
+input
+서명
+*/
+/*
+p2pkh
+퍼블릿키 해시값
+
+*/
+/*
+NULL_DATA
+블록체인상에 데이터를 저장하는 방식
+input scriptsig가 들어가지 않는 방식
+OP_RETURN을 사용
+
+*/
+/*
+BITCOINT 새로운거래형식
+SEGWIT
+p2pkh랑 비슷
+*/
+/*
+TapRoot
+2021년부터 업그레이드로 인해 새로운 거래형식
+슈노르 서명방식 지원
+- 공동 공개키를 셍성하여 하나의 서명으로 공동서명
+MAST지원
+비트코인 스크립트 실행사실을 숨길수 있음
+비트코인 프라이버시를 향상시키고 트랜잭션의 수수료를 감소
+
+*/
+/*
+Lightning
+NEWwork
+
+
+
+비트코인 레이어 2기술로 블록체인 상에서 일정 금액을 생성하고
+이를 네트워크 상에 배포시키지 않고 잠금된 금액 기반으로 실시간 거래가 가능하도록 하는 기술
+
+엘살바도르 국민들은 이 기술을 비트콘인 법정 화폐
+
+*/
+
+/*
+비잔틴 장군문제
+특정수 이상의 장군이 동시에 공격을 해야 성을 공략할수 있다.
+서로 p2p만 연락을 주고 받을떄 첩자의 방해가 있더라도 이 공격을 성공시키는 방법은?
+
+
+proof of work
+
+BFT
+*/
+/*
+BFT
+분산화된 네트워크에서 일부장애가
+발생하더라도
+네트워크가 정상적으로 동작하도록하는 알고리즘
+PBFT가 블록체인생태계에서 사용
+Cosmos,하이페브릭
+*/
+
+/*
+proof of work
+컴퓨팅 파워로 doble spending과 같은 거래 위변조 공격을 막는방법
+
+새로운 블록을 생성하는것이고 그 블록내에 field로 포함되는 nonce값을 찾는것
+전체 Network hash에 따라 Difficulty가 변화하고 10분마다 block이 생성되게 조정
+*/
+
+/*
+채굴과정
+새로운 블록이 생성됨을 알림받는다
+다음 블록 생성을 위해서 임시pending중인 트랜잭셕을 포함한다
+Coinbase거래를 임시 블록에 포함한다
+이번 블록 a와 트렌잭션들을 포함한 임시 블록 b를 만든다
+
+
+*/
+
+/*
+Network Hash Rate와 Difficulty
+Miner참여자 수가 증가하고 성능이 좋은 채굴 장비를 이용하게 되면 채굴의 속도가 점점 빨라진다.
+Difficulty따라 Bit가 조절되고 정답이 되는 Header Hash 의 0의 개수가 늘어난다
+*/
+
+/*
+Find Nonce
+bits ->hex값으로변경
+
+0x29D72D *22 **(8*(0x17 -3))
+= 0x00000
+header hash가 targe
+*/
+/*
+채굴보상
+전체 2100만개
+
+*/
+/*
+비트코인 공격방식
+51%어택
+
+동일한 utxo로 두개의 거래를 생성하고 fork를 통해서 공격자가 원하는 거래만 블록에 포함되게 하는 공격
+공격자가 더 긴 블록체인을 만들기 위해서는 전체 네트워크 hashRate의 51프로를 가져야 성공 가능성이 높음
+
+
+*/
+/*
+Sybul attack/ dos attic
+
+- 공격자가 수많은 노드를 운영하면서 비트코인 네트워크 block전파를 방해하거나 잘못된 block data를 인접 노드들에게 전송하는 공격
+- 특정 노드들에게 비정상적인 거래를 무한정 생성되어 네트워크 전체의 마비를 이르키는 공격
+
+- 비정상적인 거래 블록은 전파하지 않음
+- 이중 지불 공격은 전파하지 않음
+- 같은 노드에서 전송된 동일블록과 거레는 전파하지 않음
+- 아주 작은 단위의 거래를 전송
+
+
+*/
+/*
+Longest chain rule
+
+블록체인 네트워크 전체가 fork가 발생할 떄 하나의 블록체인만을 유지하기 위한 방법
+
+
+*/
+
+/*
+Asic과
+특정용도에 맞게 맞춤 제작된 집적 회로를 의미
+
+
+Mining Pool
+고성능 장비를 구매하기 위한 일반 사용자들이 모여서 채굴에 참여하기 위해 등장
+
+
+share - 지분투입정보
+pay-per-share - 보상에 지분에 따라 지급하는 방식
+solo miningpool - 찾은사람이 다갖는
+채굴시 일정 지분 등록하고 연산한만큼
 
 */
