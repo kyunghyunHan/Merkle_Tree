@@ -791,3 +791,52 @@ solo miningpool - 찾은사람이 다갖는
 채굴시 일정 지분 등록하고 연산한만큼
 
 */
+/*
+Level db
+kb database
+관계형 검색이 불가능
+하나의 프로세스만이 특정 데이터 베이스 접근가능
+읽기 쓰기 성능이 빠르다
+
+
+입력
+조회
+삭제
+
+
+
+'b'+32-byte block hash      /Block index기록
+'f'+4-byte file number      /파일 정보기록
+'i'+4-byte file number
+'R'+1-byte boolean      /Reindexing여부
+'F'+1-byte flag nama length+flag name string  /Txindex On/Off여부
+'t'+32-byte transaction hash       /Transaction index기록
+
+'c' +32 byte transaction hash  /트랜잭션 내 UTXO 데이터 조회용
+'B' -> 32 -byte block hash  /가장 최신 Block이 있는지확인용
+*/
+
+/*
+Mempool
+
+아직 블록에 포함되지 않는 pending Transaction들을 저장 및 관리하는 방법
+채굴자들은 Mempool중에서 Transaction을 선택해서 신규 Block에 포함시킨다
+Mempool에 들어가고도 14일동안 처리되지 않고 남아 있는 Transaction은 Expired된다
+
+*/
+/*
+key값으로만 검색이 가능
+
+*/
+/*
+Fork
+
+동시에 블록정답을 찾기에 성공하게 된경우를 분기되었다 또는 Fork라 부른다
+Longest Blockchain Rule을 통해 Fork된 네트워크 를 하나로 유지시키고 있다.
+
+
+
+
+
+
+*/
