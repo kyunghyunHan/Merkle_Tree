@@ -120,6 +120,25 @@ pub struct Proof<'a> {
 
 
 */
+//트랜잭션
+impl Transaction {
+    pub fn set_transaction(data: Inputs) -> Transaction {
+        Transaction {
+            version: 1,
+            flag: "flag".to_string(),
+            number_of_inputs: 1,
+            inputs: data,
+            number_of_outputs: 1,
+            outputs: Outputs {
+                anount: "amount".to_string(),
+                locking_script_size: "locking_script_size".to_string(),
+                lockking_script: "lockking_script".to_string(),
+            },
+            witnesses: "1".to_string(),
+            locktime: "1".to_string(),
+        }
+    }
+}
 impl MerkleTree {
     //트랜잭션들을 받아서 모임일 받아서
     pub fn mekle_tree_return(datas: Vec<Vec<u8>>) -> MerkleRoot {
@@ -382,10 +401,17 @@ fn main() {
     let input = "090A0B0C";
     let add = serialize(input);
     let decoded = hex::decode(input).expect("Decoding failed");
-
     println!("{:?}", decoded);
     let encoded = hex::encode(decoded);
     println!("{:?}", encoded);
+    let data = Inputs {
+        transaction_hash: "1".to_string(),
+        unlocking_script_size: "1".to_string(),
+        unlocking_script: "1".to_string(),
+        sequence_number: "1".to_string(),
+    };
+    let test = Transaction::set_transaction(data);
+    println!("{:?}", test);
 }
 //TDD
 #[cfg(test)]
