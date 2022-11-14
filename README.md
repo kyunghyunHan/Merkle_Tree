@@ -15,57 +15,57 @@
 트랜잭션
 version:현재값
 Flag Witnesses :Tx여부에 따라 달라짐
-Number of inputs :Input의 개수
-Inputs :input정보
-Number of Outputs :output의 개수
-Optputs : output정보
+tx_in count :Input의 개수
+tx_in :input정보
+tx_out count :output의 개수
+tx_out : output정보
 Witnesse:  Witnesse 서명데이터
-Locktime :트랜잭션 시간제한
+lock_time :트랜잭션 시간제한
 */
 pub struct Transaction {
     version: i32,
     flag: String,
-    number_of_inputs: i32,
-    inputs: Inputs,
-    number_of_outputs: i32,
-    outputs: Outputs,
+    tx_in_count: i32,
+    TxIn: TxIn,
+    number_of_TxOut: i32,
+    TxOut: TxOut,
     witnesses: String,
-    locktime: String,
+    lock_time: String,
 }
 ```
 
-- inputs
+- TxIn
 
 ```rs
 /*
-Inputs
+TxIn
 Transcation Hash: output이 포함된 txid
 output index :Tx안에서 seq
 Unlocking-script size :Unlocking-script크기
 Unlocking-script: output을 input으로 바꾸는 서명정보
 sequence Number :기본값 oxffffff
 */
-pub struct Inputs {
-    transaction_hash: String,
-    unlocking_script_size: String,
-    unlocking_script: String,
-    sequence_number: String,
+pub struct TxIn {
+    previous_output: String,
+    script_bytes: String,
+    signature_script: String,
+    sequence: String,
 }
 ```
 
-- outputs
+- TxOut
 
 ```rs
 /*
-outputs
+TxOut
 Amount 송금할금액 사토시 단위
 Locking-script size
 lockking-script 송금자의 정보가 담긴 데이터
 */
-pub struct Outputs {
-    anount: String,
-    locking_script_size: String,
-    lockking_script: String,
+pub struct TxOut {
+    value: String,
+    pk_script_bytes: String,
+    pk_script: String,
 }
 ```
 

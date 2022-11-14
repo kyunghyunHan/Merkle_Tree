@@ -8,53 +8,49 @@ pub type Hash = Vec<u8>;
 use hex;
 
 /*
-outputs
-Amount 송금할금액 사토시 단위
-Locking-script size
-lockking-script 송금자의 정보가 담긴 데이터
+TxIn
+previous_output: 사용중인 이전 아웃 포인트
+script bytes:서명 스크립트의 바이트 수, u8
+signature script :outpoint의 pubkey 스크립트에 있는 조건을 만족시키는 스크립트 언어 스크립트. 데이터 푸시만 포함
+sequence:시퀀스 번호. Bitcoin Core 및 거의 모든 다른 프로그램의 기본값은 0xffffffff ,uint32
 */
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
-pub struct Outputs {
-    anount: String,
-    locking_script_size: String,
-    lockking_script: String,
+pub struct TxIn {
+    previous_output: String,
+    script_bytes: String,
+    signature_script: String,
+    sequence: String,
 }
 /*
-Inputs
-Transcation Hash: output이 포함된 txid
-output index :Tx안에서 seq
-Unlocking-script size :Unlocking-script크기
-Unlocking-script: output을 input으로 바꾸는 서명정보
-sequence Number :기본값 oxffffff
+TxOut
+value 지출할 사토시 수
+pk_script_bytes:pubkey 스크립트의 바이트 수
+pk_script 송금자의 정보가 담긴 데이터
 */
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
-pub struct Inputs {
-    transaction_hash: String,
-    unlocking_script_size: String,
-    unlocking_script: String,
-    sequence_number: String,
+pub struct TxOut {
+    value: String,
+    pk_script_bytes: String,
+    pk_script: String,
 }
 /*
 트랜잭션
 version:현재값
-Flag Witnesses :Tx여부에 따라 달라짐
-Number of inputs :Input의 개수
-Inputs :input정보
-Number of Outputs :output의 개수
-Optputs : output정보
-Witnesse:  Witnesse 서명데이터
-Locktime :트랜잭션 시간제한
+tx_in_count :트랜잭션 입력수
+tx_in :input정보
+tx_out_count:트랜잭션 출력 수
+tx_out : output정보
+lock_time :트랜잭션 시간제한
 */
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Transaction {
     version: i32,
-    flag: String,
-    number_of_inputs: i32,
-    inputs: Inputs,
-    number_of_outputs: i32,
-    outputs: Outputs,
+    tx_in_count: i32,
+    tx_in: TxIn,
+    tx_out_count: i32,
+    tx_out: TxOut,
     witnesses: String,
-    locktime: String,
+    lock_time: String,
 }
 /*
 머클트리
@@ -122,20 +118,19 @@ pub struct Proof<'a> {
 */
 //트랜잭션
 impl Transaction {
-    pub fn set_transaction(data: Inputs) -> Transaction {
+    pub fn set_transaction(data: TxIn) -> Transaction {
         Transaction {
             version: 1,
-            flag: "flag".to_string(),
-            number_of_inputs: 1,
-            inputs: data,
-            number_of_outputs: 1,
-            outputs: Outputs {
-                anount: "amount".to_string(),
-                locking_script_size: "locking_script_size".to_string(),
-                lockking_script: "lockking_script".to_string(),
+            tx_in_count: 1,
+            tx_in: data,
+            tx_out_count: 1,
+            tx_out: TxOut {
+                value: "amount".to_string(),
+                pk_script_bytes: "pk_script_bytes".to_string(),
+                pk_script: "pk_script".to_string(),
             },
             witnesses: "1".to_string(),
-            locktime: "1".to_string(),
+            lock_time: "1".to_string(),
         }
     }
 }
@@ -175,7 +170,7 @@ impl MerkleTree {
     }
 
     //트랙잭션 hash
-    pub fn transaction_hash(data: &Transaction) -> String {
+    pub fn previous_output(data: &Transaction) -> String {
         let txs_ser = serialize(data);
         match txs_ser {
             Ok(txs_ser) => {
@@ -354,8 +349,8 @@ fn main() {
     //     vout: "6".to_string(),
     // };
     // //트랜잭션 해시 및 직렬화
-    // let hash_tx1 = MerkleTree::transaction_hash(&tx1);
-    // let hash_tx2 = MerkleTree::transaction_hash(&tx2);
+    // let hash_tx1 = MerkleTree::previous_output(&tx1);
+    // let hash_tx2 = MerkleTree::previous_output(&tx2);
     // println!("트랜잭션 해시 및 직렬화:{:?}", hash_tx1);
 
     // //해시 집합 및 직렬화
@@ -404,11 +399,11 @@ fn main() {
     println!("{:?}", decoded);
     let encoded = hex::encode(decoded);
     println!("{:?}", encoded);
-    let data = Inputs {
-        transaction_hash: "1".to_string(),
-        unlocking_script_size: "1".to_string(),
-        unlocking_script: "1".to_string(),
-        sequence_number: "1".to_string(),
+    let data = TxIn {
+        previous_output: "1".to_string(),
+        script_bytes: "1".to_string(),
+        signature_script: "1".to_string(),
+        sequence: "1".to_string(),
     };
     let test = Transaction::set_transaction(data);
     println!("{:?}", test);
@@ -422,45 +417,43 @@ mod tests {
     fn test1() {
         let tx1 = Transaction {
             version: 1,
-            flag: "s".to_string(),
-            number_of_inputs: 1,
-            inputs: Inputs {
-                transaction_hash: "s".to_string(),
-                unlocking_script_size: "s".to_string(),
-                unlocking_script: "s".to_string(),
-                sequence_number: "s".to_string(),
+            tx_in_count: 1,
+            tx_in: TxIn {
+                previous_output: "s".to_string(),
+                script_bytes: "s".to_string(),
+                signature_script: "s".to_string(),
+                sequence: "s".to_string(),
             },
-            number_of_outputs: 1,
-            outputs: Outputs {
-                anount: "s".to_string(),
-                locking_script_size: "s".to_string(),
-                lockking_script: "s".to_string(),
+            tx_out_count: 1,
+            tx_out: TxOut {
+                value: "s".to_string(),
+                pk_script_bytes: "s".to_string(),
+                pk_script: "s".to_string(),
             },
             witnesses: "s".to_string(),
-            locktime: "s".to_string(),
+            lock_time: "s".to_string(),
         };
         let tx2 = Transaction {
             version: 1,
-            flag: "s".to_string(),
-            number_of_inputs: 1,
-            inputs: Inputs {
-                transaction_hash: "s".to_string(),
-                unlocking_script_size: "s".to_string(),
-                unlocking_script: "s".to_string(),
-                sequence_number: "s".to_string(),
+            tx_in_count: 1,
+            tx_in: TxIn {
+                previous_output: "s".to_string(),
+                script_bytes: "s".to_string(),
+                signature_script: "s".to_string(),
+                sequence: "s".to_string(),
             },
-            number_of_outputs: 1,
-            outputs: Outputs {
-                anount: "s".to_string(),
-                locking_script_size: "s".to_string(),
-                lockking_script: "s".to_string(),
+            tx_out_count: 1,
+            tx_out: TxOut {
+                value: "s".to_string(),
+                pk_script_bytes: "s".to_string(),
+                pk_script: "s".to_string(),
             },
             witnesses: "s".to_string(),
-            locktime: "s".to_string(),
+            lock_time: "s".to_string(),
         };
         //트랜잭션 해시 및 직렬화
-        let hash_tx1 = MerkleTree::transaction_hash(&tx1);
-        let hash_tx2 = MerkleTree::transaction_hash(&tx2);
+        let hash_tx1 = MerkleTree::previous_output(&tx1);
+        let hash_tx2 = MerkleTree::previous_output(&tx2);
         println!("트랜잭션 해시 및 직렬화:{:?}", hash_tx1);
 
         assert!(hash_tx1 != hash_tx2);
@@ -690,12 +683,12 @@ output 받는금액
 
 version  현재값1
 Flag  Witnesses Tx여부에 따라 달라짐
-Number of inputs input의 개수
-inputs input정보
-Number of Outputs  ouput의 개수
-outputs output정보
+Number of TxIn input의 개수
+TxIn input정보
+Number of TxOut  ouput의 개수
+TxOut output정보
 Witnesses Witnesses서명데이터
-Locktime 트랜잭션 시간 제한
+lock_time 트랜잭션 시간 제한
 
 
 */
