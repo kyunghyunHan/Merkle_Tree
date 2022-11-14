@@ -46,9 +46,9 @@ lock_time :트랜잭션 시간제한
 pub struct Transaction {
     version: i32,
     tx_in_count: i32,
-    tx_in: TxIn,
+    tx_in: Vec<TxIn>,
     tx_out_count: i32,
-    tx_out: TxOut,
+    tx_out: Vec<TxOut>,
     witnesses: String,
     lock_time: String,
 }
@@ -86,7 +86,6 @@ pub enum HashDirection {
     Left,
     Right,
 }
-
 /*
 Proof증명
 */
@@ -117,19 +116,21 @@ pub struct Proof<'a> {
 */
 //트랜잭션
 impl Transaction {
-    pub fn set_transaction(data: TxIn) -> Transaction {
+    pub fn set_transaction(data: Vec<TxIn>) -> Transaction {
+        let test = vec![TxOut {
+            value: "amount".to_string(),
+            pk_script_bytes: "pk_script_bytes".to_string(),
+            pk_script: "pk_script".to_string(),
+        }];
+
         Transaction {
             version: 1,
             tx_in_count: 1,
             tx_in: data,
             tx_out_count: 1,
-            tx_out: TxOut {
-                value: "amount".to_string(),
-                pk_script_bytes: "pk_script_bytes".to_string(),
-                pk_script: "pk_script".to_string(),
-            },
+            tx_out: test,
             witnesses: "0xffffffff".to_string(),
-            lock_time: "0xffffffff".to_string(),
+            lock_time: "10분제한".to_string(),
         }
     }
 }
@@ -398,12 +399,12 @@ fn main() {
     println!("{:?}", decoded);
     let encoded = hex::encode(decoded);
     println!("{:?}", encoded);
-    let data = TxIn {
+    let data = vec![TxIn {
         previous_output: "0xffffffff".to_string(),
         script_bytes: "0xffffffff".to_string(),
         signature_script: "0xffffffff".to_string(),
         sequence: "0xffffffff".to_string(),
-    };
+    }];
     let test = Transaction::set_transaction(data);
     println!("{:?}", test);
 }
@@ -417,36 +418,36 @@ mod tests {
         let tx1 = Transaction {
             version: 1,
             tx_in_count: 1,
-            tx_in: TxIn {
+            tx_in: vec![TxIn {
                 previous_output: "s".to_string(),
                 script_bytes: "s".to_string(),
                 signature_script: "s".to_string(),
                 sequence: "s".to_string(),
-            },
+            }],
             tx_out_count: 1,
-            tx_out: TxOut {
+            tx_out: vec![TxOut {
                 value: "s".to_string(),
                 pk_script_bytes: "s".to_string(),
                 pk_script: "s".to_string(),
-            },
+            }],
             witnesses: "s".to_string(),
             lock_time: "s".to_string(),
         };
         let tx2 = Transaction {
             version: 1,
             tx_in_count: 1,
-            tx_in: TxIn {
+            tx_in: vec![TxIn {
                 previous_output: "s".to_string(),
                 script_bytes: "s".to_string(),
                 signature_script: "s".to_string(),
                 sequence: "s".to_string(),
-            },
+            }],
             tx_out_count: 1,
-            tx_out: TxOut {
+            tx_out: vec![TxOut {
                 value: "s".to_string(),
                 pk_script_bytes: "s".to_string(),
                 pk_script: "s".to_string(),
-            },
+            }],
             witnesses: "s".to_string(),
             lock_time: "s".to_string(),
         };
