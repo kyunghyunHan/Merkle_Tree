@@ -1,3 +1,5 @@
+use std::process::Output;
+
 use crate::error::BlockchainError;
 use anyhow::{Error, Result};
 use serde::{Deserialize, Serialize};
@@ -114,6 +116,16 @@ pub struct Proof<'a> {
 
 */
 //트랜잭션
+impl TxOut {
+    pub fn set_output() {
+        println!("{}", "아웃풋 생성");
+    }
+}
+impl TxIn {
+    pub fn set_input() {
+        println!("{}", "인풋생성");
+    }
+}
 impl Transaction {
     pub fn set_transaction(data: Vec<TxIn>) -> Transaction {
         let test = vec![TxOut {
@@ -332,79 +344,21 @@ pub fn hash_to_str(data: &[u8]) -> String {
     hasher.result_str()
 }
 
-//test
 fn main() {
-    // assert!(true);
-    // //트랜잭션데이터
-    // let tx1 = Transaction {
-    //     id: "0xffffffff".to_string(),
-    //     vin: "2".to_string(),
-    //     vout: "3".to_string(),
-    // };
-    // let tx2 = Transaction {
-    //     id: "4".to_string(),
-    //     vin: "5".to_string(),
-    //     vout: "6".to_string(),
-    // };
-    // //트랜잭션 해시 및 직렬화
-    // let hash_tx1 = MerkleTree::previous_output(&tx1);
-    // let hash_tx2 = MerkleTree::previous_output(&tx2);
-    // println!("트랜잭션 해시 및 직렬화:{:?}", hash_tx1);
+    let inputdata1 = TxIn {
+        previous_output: "previous_output".to_string(),
+        script_bytes: "script_bytes".to_string(),
+        signature_script: "signature_script".to_string(),
+        sequence: "sequence".to_string(),
+    };
+    let inputdata2 = TxIn {
+        previous_output: "previous_output".to_string(),
+        script_bytes: "script_bytes".to_string(),
+        signature_script: "signature_script".to_string(),
+        sequence: "sequence".to_string(),
+    };
 
-    // //해시 집합 및 직렬화
-    // let mut txs = Vec::new();
-    // txs.push(bincode::serialize(&hash_tx1).unwrap());
-    // txs.push(bincode::serialize(&hash_tx2).unwrap());
-    // txs.push(bincode::serialize(&hash_tx1).unwrap());
-    // txs.push(bincode::serialize(&hash_tx2).unwrap());
-
-    // println!("해시 집합:{:?}", txs);
-
-    // //연결
-    // let concat = MerkleTree::hash_concat(&txs[0], &txs[1]);
-    // println!("연결{:?}", concat);
-    // // // let tss = MerkleTree::construct_level_up(&txs);
-
-    // //연결한 해시들 해시
-    // let hash = hash_to_str(&concat);
-    // println!("연결한 해시들 해시:{:?}", hash);
-    // //해시를 다시 직렬
-    // let ser_hash1 = bincode::serialize(&hash).unwrap();
-    // println!("해시를 다시 직렬 {:?}", ser_hash1);
-    // let ser_hash2 = bincode::serialize(&hash).unwrap();
-    // println!("해시를 다시 직렬 {:?}", ser_hash2);
-
-    // //역직렬화
-    // let deserialize_hash: String = bincode::deserialize(&ser_hash1).unwrap();
-    // println!("{:?}", deserialize_hash);
-
-    // let mekle_root = MerkleTree::mekle_tree_return(txs).hash;
-    // println!("merkle_root:{:?}", mekle_root);
-
-    // let test = [0];
-    // let test_hash1 = bincode::serialize(&test).unwrap();
-    // let test2 = 0;
-    // let test_hash2 = bincode::serialize(&test2).unwrap();
-
-    // println!("1{:?}", test_hash1);
-    // println!("2{:?}", test_hash2);
-
-    // let ara = MerkleTree::construct_level_up(&txs);
-
-    let input = "090A0B0C";
-    let add = serialize(input);
-    let decoded = hex::decode(input).expect("Decoding failed");
-    println!("{:?}", decoded);
-    let encoded = hex::encode(decoded);
-    println!("{:?}", encoded);
-    let data = vec![TxIn {
-        previous_output: "0xffffffff".to_string(),
-        script_bytes: "0xffffffff".to_string(),
-        signature_script: "0xffffffff".to_string(),
-        sequence: "0xffffffff".to_string(),
-    }];
-    let test = Transaction::set_transaction(data);
-    println!("{:?}", test);
+    println!("{:?}", inputdata1);
 }
 //TDD
 #[cfg(test)]
@@ -910,10 +864,4 @@ Fork
 
 동시에 블록정답을 찾기에 성공하게 된경우를 분기되었다 또는 Fork라 부른다
 Longest Blockchain Rule을 통해 Fork된 네트워크 를 하나로 유지시키고 있다.
-
-
-
-
-
-
 */
