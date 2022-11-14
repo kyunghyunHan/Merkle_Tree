@@ -46,9 +46,9 @@ lock_time :트랜잭션 시간제한
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Transaction {
     version: i32,
-    tx_in_count: i32,
+    tx_in_count: usize,
     tx_in: Vec<TxIn>,
-    tx_out_count: i32,
+    tx_out_count: usize,
     tx_out: Vec<TxOut>,
     lock_time: String,
 }
@@ -126,7 +126,7 @@ impl TxIn {
     }
 }
 impl Transaction {
-    pub fn set_transaction(data: Vec<TxIn>) -> Transaction {
+    pub fn set_transaction(data: &Vec<TxIn>) -> Transaction {
         let test = vec![TxOut {
             value: "amount".to_string(),
             pk_script_bytes: "pk_script_bytes".to_string(),
@@ -135,8 +135,8 @@ impl Transaction {
 
         Transaction {
             version: 1,
-            tx_in_count: 1,
-            tx_in: data,
+            tx_in_count: get_input_len(data.clone()),
+            tx_in: data.clone(),
             tx_out_count: 1,
             tx_out: test,
             lock_time: "10분제한".to_string(),
@@ -342,7 +342,10 @@ pub fn hash_to_str(data: &[u8]) -> String {
     //해시 다이제스트 읽기
     hasher.result_str()
 }
-
+//input의 갯수 받아오기
+pub fn get_input_len(inputs: Vec<TxIn>) -> usize {
+    inputs.len()
+}
 fn main() {
     let inputdata1 = TxIn {
         previous_output: "previous_output".to_string(),
@@ -356,8 +359,12 @@ fn main() {
         signature_script: "signature_script".to_string(),
         sequence: "sequence".to_string(),
     };
+    let mut input: Vec<TxIn> = vec![];
+    input.push(inputdata1);
+    input.push(inputdata2);
+    let result_tx = Transaction::set_transaction(&input);
 
-    println!("{:?}", inputdata1);
+    println!("{:?}", result_tx);
 }
 //TDD
 #[cfg(test)]
@@ -428,13 +435,6 @@ RSA
 4.RSA-2048 대부분의 인터넷 뱅킹
 */
 
-/*
-큰수의 소인수분해
-
-이산대수
-
-
-*/
 /*
 RSA암화방식 :복호화 방식
 hash방식:비밀번호 찾기 하면 무조건 바까야함
