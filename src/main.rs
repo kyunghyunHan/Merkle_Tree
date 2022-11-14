@@ -6,22 +6,55 @@ use crypto::{digest::Digest, sha3::Sha3};
 pub type Data = Vec<u8>;
 pub type Hash = Vec<u8>;
 use hex;
+
+/*
+outputs
+Amount 송금할금액 사토시 단위
+Locking-script size
+lockking-script 송금자의 정보가 담긴 데이터
+*/
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct Outputs {
+    anount: String,
+    locking_script_size: String,
+    lockking_script: String,
+}
+/*
+Inputs
+Transcation Hash: output이 포함된 txid
+output index :Tx안에서 seq
+Unlocking-script size :Unlocking-script크기
+Unlocking-script: output을 input으로 바꾸는 서명정보
+sequence Number :기본값 oxffffff
+*/
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct Inputs {
+    transaction_hash: String,
+    unlocking_script_size: String,
+    unlocking_script: String,
+    sequence_number: String,
+}
 /*
 트랜잭션
-value
-to
-from
-data
-id: 트랜잭션 해시 값
-vin: 트랜잭션 입력 세트
-vout: 트랜잭션 출력 수집
+version:현재값
+Flag Witnesses :Tx여부에 따라 달라짐
+Number of inputs :Input의 개수
+Inputs :input정보
+Number of Outputs :output의 개수
+Optputs : output정보
+Witnesse:  Witnesse 서명데이터
+Locktime :트랜잭션 시간제한
 */
-
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Transaction {
-    id: String,
-    vin: String,
-    vout: String,
+    version: i32,
+    flag: String,
+    number_of_inputs: i32,
+    inputs: Inputs,
+    number_of_outputs: i32,
+    outputs: Outputs,
+    witnesses: String,
+    locktime: String,
 }
 /*
 머클트리
@@ -354,7 +387,6 @@ fn main() {
     let encoded = hex::encode(decoded);
     println!("{:?}", encoded);
 }
-
 //TDD
 #[cfg(test)]
 mod tests {
@@ -363,14 +395,42 @@ mod tests {
     #[test]
     fn test1() {
         let tx1 = Transaction {
-            id: "1".to_string(),
-            vin: "2".to_string(),
-            vout: "3".to_string(),
+            version: 1,
+            flag: "s".to_string(),
+            number_of_inputs: 1,
+            inputs: Inputs {
+                transaction_hash: "s".to_string(),
+                unlocking_script_size: "s".to_string(),
+                unlocking_script: "s".to_string(),
+                sequence_number: "s".to_string(),
+            },
+            number_of_outputs: 1,
+            outputs: Outputs {
+                anount: "s".to_string(),
+                locking_script_size: "s".to_string(),
+                lockking_script: "s".to_string(),
+            },
+            witnesses: "s".to_string(),
+            locktime: "s".to_string(),
         };
         let tx2 = Transaction {
-            id: "4".to_string(),
-            vin: "5".to_string(),
-            vout: "6".to_string(),
+            version: 1,
+            flag: "s".to_string(),
+            number_of_inputs: 1,
+            inputs: Inputs {
+                transaction_hash: "s".to_string(),
+                unlocking_script_size: "s".to_string(),
+                unlocking_script: "s".to_string(),
+                sequence_number: "s".to_string(),
+            },
+            number_of_outputs: 1,
+            outputs: Outputs {
+                anount: "s".to_string(),
+                locking_script_size: "s".to_string(),
+                lockking_script: "s".to_string(),
+            },
+            witnesses: "s".to_string(),
+            locktime: "s".to_string(),
         };
         //트랜잭션 해시 및 직렬화
         let hash_tx1 = MerkleTree::transaction_hash(&tx1);
