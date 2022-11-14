@@ -49,7 +49,6 @@ pub struct Transaction {
     tx_in: Vec<TxIn>,
     tx_out_count: i32,
     tx_out: Vec<TxOut>,
-    witnesses: String,
     lock_time: String,
 }
 /*
@@ -129,7 +128,6 @@ impl Transaction {
             tx_in: data,
             tx_out_count: 1,
             tx_out: test,
-            witnesses: "0xffffffff".to_string(),
             lock_time: "10분제한".to_string(),
         }
     }
@@ -430,7 +428,7 @@ mod tests {
                 pk_script_bytes: "s".to_string(),
                 pk_script: "s".to_string(),
             }],
-            witnesses: "s".to_string(),
+
             lock_time: "s".to_string(),
         };
         let tx2 = Transaction {
@@ -448,7 +446,7 @@ mod tests {
                 pk_script_bytes: "s".to_string(),
                 pk_script: "s".to_string(),
             }],
-            witnesses: "s".to_string(),
+
             lock_time: "s".to_string(),
         };
         //트랜잭션 해시 및 직렬화

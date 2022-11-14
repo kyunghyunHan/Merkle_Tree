@@ -29,7 +29,7 @@ pub struct Transaction {
     TxIn: TxIn,
     number_of_TxOut: i32,
     TxOut: TxOut,
-    witnesses: String,
+
     lock_time: String,
 }
 ```
