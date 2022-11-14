@@ -77,7 +77,6 @@ pub struct MerkleTree {
     pub merkle_root: MerkleRoot,
 }
 /*
-
 해시 디렉션
 증명 해시를 연결할 때 해시를 넣을 쪽에
 */
@@ -129,8 +128,8 @@ impl Transaction {
                 pk_script_bytes: "pk_script_bytes".to_string(),
                 pk_script: "pk_script".to_string(),
             },
-            witnesses: "1".to_string(),
-            lock_time: "1".to_string(),
+            witnesses: "0xffffffff".to_string(),
+            lock_time: "0xffffffff".to_string(),
         }
     }
 }
@@ -232,8 +231,8 @@ impl MerkleTree {
     }
 
     /*
-    주어진 리프 인덱스에 대한 머클 증명을 생성합니다.
-    인덱스가 리프에 해당하지 않으면 오류를 반환합니다.
+    주어진 리프 인덱스에 대한 머클 증명을 생성
+    인덱스가 리프에 해당하지 않으면 오류를 반환
     */
     pub fn get_merkle_proof_by_index(&self, leaf_index: usize) -> Result<Proof> {
         if leaf_index >= self.num_leaves() {
@@ -339,7 +338,7 @@ fn main() {
     // assert!(true);
     // //트랜잭션데이터
     // let tx1 = Transaction {
-    //     id: "1".to_string(),
+    //     id: "0xffffffff".to_string(),
     //     vin: "2".to_string(),
     //     vout: "3".to_string(),
     // };
@@ -400,10 +399,10 @@ fn main() {
     let encoded = hex::encode(decoded);
     println!("{:?}", encoded);
     let data = TxIn {
-        previous_output: "1".to_string(),
-        script_bytes: "1".to_string(),
-        signature_script: "1".to_string(),
-        sequence: "1".to_string(),
+        previous_output: "0xffffffff".to_string(),
+        script_bytes: "0xffffffff".to_string(),
+        signature_script: "0xffffffff".to_string(),
+        sequence: "0xffffffff".to_string(),
     };
     let test = Transaction::set_transaction(data);
     println!("{:?}", test);
