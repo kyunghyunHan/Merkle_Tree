@@ -7,7 +7,6 @@ mod error;
 use crypto::{digest::Digest, sha3::Sha3};
 pub type Data = Vec<u8>;
 pub type Hash = Vec<u8>;
-use hex;
 
 /*
 TxIn
