@@ -85,3 +85,12 @@ pub struct MerkleTree{
 ## 2.트랜잭션해시
 
 ## 3.직렬화,역직렬화
+
+## 블록헤더
+
+```rs
+pub BlockHeaders{
+ pub version:i32,
+ pub previous block header hash
+}
+```

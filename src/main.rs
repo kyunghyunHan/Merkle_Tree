@@ -7,7 +7,22 @@ mod error;
 use crypto::{digest::Digest, sha3::Sha3};
 pub type Data = Vec<u8>;
 pub type Hash = Vec<u8>;
-
+/*블록헤더 */
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct BlockHeaders {
+    version: i32,
+    previous_block_header_hash: String,
+    merkle_root_hash: String,
+    time: u8,
+    nbits: u32,
+    nonce: u32,
+}
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct Block {
+    pub block_header: BlockHeaders,
+    pub tx_count: usize,
+    pub txns: Vec<Transaction>,
+}
 /*
 TxIn
 previous_output: 사용중인 이전 아웃 포인트
