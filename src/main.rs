@@ -58,6 +58,14 @@ tx_out_count:트랜잭션 출력 수
 tx_out : output정보
 lock_time :트랜잭션 시간제한
 */
+
+/*
+
+
+ss
+
+
+*/
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct Transaction {
     version: i32,
